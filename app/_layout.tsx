@@ -12,7 +12,7 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
-      <Stack initialRouteName="(tabs)" screenOptions={{ headerShown: false }} />
+      <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
     </>
   );
 }
