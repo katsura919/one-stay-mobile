@@ -1,5 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { jwtDecode } from 'jwt-decode';
+
+interface JWTPayload {
+  userId: string;
+  role: string;
+  exp: number;
+}
 
 export const logout = async () => {
   try {
@@ -29,6 +36,19 @@ export const getToken = async () => {
     return await AsyncStorage.getItem('token');
   } catch (error) {
     console.error('Error getting token:', error);
+    return null;
+  }
+};
+
+export const getUserIdFromToken = async () => {
+  try {
+    const token = await getToken();
+    if (!token) return null;
+    
+    const decoded = jwtDecode<JWTPayload>(token);
+    return decoded.userId;
+  } catch (error) {
+    console.error('Error decoding token:', error);
     return null;
   }
 };

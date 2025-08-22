@@ -39,7 +39,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         
         // Create user object from API response
         const user: User = {
-          id: Math.random(), // You might want to get this from your API response
+          id: response.user.id, // Now using the actual user ID from API
           name: response.user.username,
           email: response.user.email,
           role: response.user.role as UserRole,
@@ -129,7 +129,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           
           <Button 
             mode="text" 
-            onPress={() => router.push('/RegisterScreen')} 
+            onPress={() => router.push('/Register')} 
             style={{ marginBottom: 8 }} 
             labelStyle={{ color: '#EC4899', fontWeight: '600' }}
           >
