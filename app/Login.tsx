@@ -136,15 +136,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             Don't have an account? Register
           </Button>
           
-          <View className="mt-4 p-4 bg-gray-50 rounded-lg w-full">
-            <Text className="text-xs text-gray-600 text-center mb-2">
-              Use your registered credentials to login
-            </Text>
-            <Text className="text-xs text-gray-500 text-center">
-              Role-based routing will be determined automatically
-            </Text>
-          </View>
-          
           <IconButton icon="beach" size={32} iconColor="#FFB400" className="mt-4" />
         </View>
       </View>

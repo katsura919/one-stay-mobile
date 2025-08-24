@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Keyboard, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, Phone, MoreVertical } from 'lucide-react-native';
-import { dummyChats, Chat, ChatMessage } from '../../data/chat-data';
+import { dummyChats, Chat, ChatMessage } from '../data/chat-data';
 
 export default function ChatConversation() {
   const { chatId } = useLocalSearchParams();
   const [message, setMessage] = useState('');
   const [currentChat, setCurrentChat] = useState<Chat | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const chat = dummyChats.find(c => c._id === chatId);
@@ -18,6 +19,18 @@ export default function ChatConversation() {
       setCurrentChat(chat);
     }
   }, [chatId]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    });
+
+    return () => {
+      keyboardDidShowListener?.remove();
+    };
+  }, []);
 
   const handleSendMessage = () => {
     if (message.trim() && currentChat) {
@@ -111,14 +124,23 @@ export default function ChatConversation() {
 
   if (!currentChat) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <View 
+        className="flex-1 bg-white items-center justify-center"
+        style={{ paddingTop: insets.top }}
+      >
         <Text className="text-gray-500">Chat not found</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <KeyboardAvoidingView 
+      style={{ ...styles.container, paddingTop: insets.top }}   
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+           
+
+    >
       {/* Header */}
       <View 
         className="flex-row items-center justify-between px-4 py-3 bg-white"
@@ -130,50 +152,47 @@ export default function ChatConversation() {
           elevation: 4,
         }}
       >
-        <View className="flex-row items-center flex-1">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="mr-3 p-2 -ml-2"
-          >
-            <ArrowLeft size={24} color="#374151" />
-          </TouchableOpacity>
+          <View className="flex-row items-center flex-1">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="mr-3 p-2 -ml-2"
+            >
+              <ArrowLeft size={24} color="#374151" />
+            </TouchableOpacity>
+            
+            <Image
+              source={{ uri: currentChat.resort_image }}
+              className="w-10 h-10 rounded-full mr-3"
+            />
+            
+            <View className="flex-1">
+              <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
+                {currentChat.resort_name}
+              </Text>
+              <Text className="text-sm text-gray-600">
+                {currentChat.owner_name}
+              </Text>
+            </View>
+          </View>
           
-          <Image
-            source={{ uri: currentChat.resort_image }}
-            className="w-10 h-10 rounded-full mr-3"
-          />
-          
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
-              {currentChat.resort_name}
-            </Text>
-            <Text className="text-sm text-gray-600">
-              {currentChat.owner_name}
-            </Text>
+          <View className="flex-row">
+            <TouchableOpacity className="p-2 mr-2">
+              <Phone size={20} color="#6B7280" />
+            </TouchableOpacity>
+            <TouchableOpacity className="p-2">
+              <MoreVertical size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
         </View>
-        
-        <View className="flex-row">
-          <TouchableOpacity className="p-2 mr-2">
-            <Phone size={20} color="#6B7280" />
-          </TouchableOpacity>
-          <TouchableOpacity className="p-2">
-            <MoreVertical size={20} color="#6B7280" />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Messages */}
-      <KeyboardAvoidingView 
-        className="flex-1" 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+        {/* Messages */}
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 px-4 pt-4"
           style={{ backgroundColor: '#FAFAFA' }}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+          keyboardShouldPersistTaps="handled"
         >
           {currentChat.messages.map(renderMessage)}
         </ScrollView>
@@ -189,6 +208,7 @@ export default function ChatConversation() {
             shadowOpacity: 0.1,
             shadowRadius: 8,
             elevation: 8,
+            paddingBottom: insets.bottom + 12,
           }}
         >
           <View className="flex-1 max-h-24 bg-gray-50 rounded-2xl px-4 py-3 mr-3 border border-gray-200">
@@ -197,13 +217,15 @@ export default function ChatConversation() {
               onChangeText={setMessage}
               placeholder="Type a message..."
               placeholderTextColor="#9CA3AF"
-              className="flex-1 text-base color-gray-900 leading-5"
+              className="flex-1 text-base leading-5"
               multiline
               maxLength={500}
               style={{ 
                 minHeight: 20,
                 paddingTop: Platform.OS === 'ios' ? 0 : 2,
                 paddingBottom: Platform.OS === 'ios' ? 0 : 2,
+                color: '#111827', // Dark gray text color
+                fontSize: 16,
               }}
             />
           </View>
@@ -229,7 +251,12 @@ export default function ChatConversation() {
             />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

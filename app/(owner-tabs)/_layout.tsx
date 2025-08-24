@@ -48,7 +48,7 @@ export default function OwnerTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="ChatScreen"
+        name="OwnerChatScreen"
         options={{
           title: "Messages",
           tabBarIcon: ({ color, size }) => (
