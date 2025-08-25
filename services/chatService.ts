@@ -28,7 +28,8 @@ export interface StartChatRequest {
 }
 
 export interface SendMessageRequest {
-  chat_id: string;
+  customer_id: string;
+  resort_id: string;
   sender: 'customer' | 'owner';
   text: string;
 }

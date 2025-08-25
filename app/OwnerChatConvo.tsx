@@ -190,7 +190,8 @@ export default function OwnerChatConversation() {
           // Fallback to REST API
           console.log('Socket not connected, using REST API fallback');
           await chatService.sendMessage({
-            chat_id: chatId as string,
+            customer_id: currentChat.customer_id,
+            resort_id: currentChat.resort_id,
             sender: 'owner',
             text: messageText
           });
