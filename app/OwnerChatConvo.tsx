@@ -83,15 +83,34 @@ export default function OwnerChatConversation() {
     // Listen for new messages
     const unsubscribeMessage = ownerChatSocket.onMessage((newMessage) => {
       if (newMessage.chatId === chatId) {
-        setCurrentChat(prevChat => {
-          if (!prevChat) return null;
-          return {
-            ...prevChat,
-            messages: [...prevChat.messages, newMessage],
-            last_message: newMessage.text,
-            last_message_time: newMessage.timestamp
-          };
-        });
+        // Don't add our own messages since we already have them from optimistic update
+        if (newMessage.senderId === ownerChatSocket.userId) {
+          // Just update the temp message with the real ID from server
+          setCurrentChat(prevChat => {
+            if (!prevChat) return null;
+            return {
+              ...prevChat,
+              messages: prevChat.messages.map(msg => 
+                msg._id.startsWith('temp_') && msg.text === newMessage.text
+                  ? { ...newMessage, timestamp: new Date(newMessage.timestamp) }
+                  : msg
+              ),
+              last_message: newMessage.text,
+              last_message_time: new Date(newMessage.timestamp)
+            };
+          });
+        } else {
+          // Add messages from other users
+          setCurrentChat(prevChat => {
+            if (!prevChat) return null;
+            return {
+              ...prevChat,
+              messages: [...prevChat.messages, { ...newMessage, timestamp: new Date(newMessage.timestamp) }],
+              last_message: newMessage.text,
+              last_message_time: new Date(newMessage.timestamp)
+            };
+          });
+        }
 
         // Auto scroll to bottom
         setTimeout(() => {
@@ -125,6 +144,28 @@ export default function OwnerChatConversation() {
       }
     });
 
+    // Listen for message sent confirmations
+    const unsubscribeMessageSent = ownerChatSocket.onMessageSent((confirmation) => {
+      if (confirmation.chatId === chatId) {
+        // Replace temporary message with confirmed message
+        setCurrentChat(prevChat => {
+          if (!prevChat) return null;
+          return {
+            ...prevChat,
+            messages: prevChat.messages.map(msg => {
+              if (msg._id.startsWith('temp_') && confirmation.message && msg.text === confirmation.message.text) {
+                return {
+                  ...confirmation.message,
+                  timestamp: new Date(confirmation.message.timestamp)
+                };
+              }
+              return msg;
+            })
+          };
+        });
+      }
+    });
+
     // Listen for errors
     const unsubscribeError = ownerChatSocket.onError((error) => {
       console.error('Chat socket error:', error);
@@ -138,6 +179,7 @@ export default function OwnerChatConversation() {
       unsubscribeChatStatus();
       unsubscribeUserJoined();
       unsubscribeUserLeft();
+      unsubscribeMessageSent();
       unsubscribeError();
     };
   };

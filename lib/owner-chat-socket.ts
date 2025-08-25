@@ -36,6 +36,13 @@ export interface MessageReadData {
   readAt: Date;
 }
 
+export interface MessageSentConfirmation {
+  messageId: string;
+  chatId: string;
+  timestamp: Date;
+  message?: OwnerChatMessage;
+}
+
 class OwnerChatSocket {
   private socket: Socket | null = null;
   private isConnected = false;
@@ -46,6 +53,7 @@ class OwnerChatSocket {
 
   // Event handlers
   private messageHandlers: ((message: OwnerChatMessage) => void)[] = [];
+  private messageSentHandlers: ((confirmation: MessageSentConfirmation) => void)[] = [];
   private chatStatusHandlers: ((status: ChatStatus) => void)[] = [];
   private messageReadHandlers: ((data: MessageReadData) => void)[] = [];
   private userJoinedHandlers: ((data: { socketId: string; chatId: string }) => void)[] = [];
@@ -152,6 +160,10 @@ class OwnerChatSocket {
 
     this.socket.on('message_sent', (data) => {
       console.log('Owner message sent confirmation:', data);
+      this.notifyMessageSentHandlers({
+        ...data,
+        timestamp: new Date(data.timestamp)
+      });
     });
 
     // Chat status events
@@ -275,6 +287,16 @@ class OwnerChatSocket {
     };
   }
 
+  onMessageSent(handler: (confirmation: MessageSentConfirmation) => void): () => void {
+    this.messageSentHandlers.push(handler);
+    return () => {
+      const index = this.messageSentHandlers.indexOf(handler);
+      if (index > -1) {
+        this.messageSentHandlers.splice(index, 1);
+      }
+    };
+  }
+
   onMessageRead(handler: (data: MessageReadData) => void): () => void {
     this.messageReadHandlers.push(handler);
     return () => {
@@ -342,6 +364,16 @@ class OwnerChatSocket {
         handler(message);
       } catch (error) {
         console.error('Error in message handler:', error);
+      }
+    });
+  }
+
+  private notifyMessageSentHandlers(confirmation: MessageSentConfirmation): void {
+    this.messageSentHandlers.forEach(handler => {
+      try {
+        handler(confirmation);
+      } catch (error) {
+        console.error('Error in message sent handler:', error);
       }
     });
   }
