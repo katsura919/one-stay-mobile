@@ -1,26 +1,146 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Keyboard, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Keyboard, StyleSheet, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Send, Phone, MoreVertical } from 'lucide-react-native';
-import { dummyOwnerChats, OwnerChat, OwnerChatMessage } from '../data/owner-chat-data';
-
-
+import { ArrowLeft, Send, Phone, MoreVertical, Wifi, WifiOff } from 'lucide-react-native';
+import { OwnerChat, OwnerChatMessage } from '../data/owner-chat-data';
+import { ownerChatSocket } from '../lib/owner-chat-socket';
+import { chatService } from '../services/chatService';
 
 export default function OwnerChatConversation() {
   const { chatId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [currentChat, setCurrentChat] = useState<OwnerChat | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    const chat = dummyOwnerChats.find(c => c._id === chatId);
-    if (chat) {
-      setCurrentChat(chat);
-    }
+    initializeChat();
+    return () => {
+      if (chatId) {
+        ownerChatSocket.leaveChat(chatId as string);
+      }
+    };
   }, [chatId]);
+
+  const initializeChat = async () => {
+    try {
+      // Load chat data
+      await loadChat();
+      
+      // Connect to socket if not already connected
+      const connected = ownerChatSocket.connected || await ownerChatSocket.connect();
+      setSocketConnected(connected);
+
+      if (connected && chatId) {
+        // Join the specific chat room
+        ownerChatSocket.joinChat(chatId as string);
+        
+        // Get chat status (if other user is online)
+        ownerChatSocket.getChatStatus(chatId as string);
+        
+        // Mark messages as read
+        ownerChatSocket.markAsRead(chatId as string);
+      }
+
+      // Set up socket listeners
+      setupSocketListeners();
+
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+      Alert.alert('Error', 'Failed to load chat');
+    }
+  };
+
+  const loadChat = async () => {
+    try {
+      if (!chatId) return;
+      
+      console.log('Loading chat:', chatId);
+      const apiChat = await chatService.getChat(chatId as string);
+      console.log('API chat response:', apiChat);
+      
+      const transformedChat = chatService.transformApiChat(apiChat);
+      console.log('Transformed chat:', transformedChat);
+      
+      setCurrentChat(transformedChat);
+      
+    } catch (error) {
+      console.error('Error loading chat:', error);
+      
+      if (__DEV__) {
+        Alert.alert('Development Error', `Failed to load chat: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } else {
+        Alert.alert('Error', 'Failed to load chat');
+      }
+    }
+  };
+
+  const setupSocketListeners = () => {
+    // Listen for new messages
+    const unsubscribeMessage = ownerChatSocket.onMessage((newMessage) => {
+      if (newMessage.chatId === chatId) {
+        setCurrentChat(prevChat => {
+          if (!prevChat) return null;
+          return {
+            ...prevChat,
+            messages: [...prevChat.messages, newMessage],
+            last_message: newMessage.text,
+            last_message_time: newMessage.timestamp
+          };
+        });
+
+        // Auto scroll to bottom
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    });
+
+    // Listen for connection status
+    const unsubscribeConnection = ownerChatSocket.onConnection((connected) => {
+      setSocketConnected(connected);
+    });
+
+    // Listen for chat status
+    const unsubscribeChatStatus = ownerChatSocket.onChatStatus((status) => {
+      if (status.chatId === chatId) {
+        setIsOtherUserOnline(status.isOtherUserOnline);
+      }
+    });
+
+    // Listen for user joining/leaving
+    const unsubscribeUserJoined = ownerChatSocket.onUserJoined((data) => {
+      if (data.chatId === chatId) {
+        setIsOtherUserOnline(true);
+      }
+    });
+
+    const unsubscribeUserLeft = ownerChatSocket.onUserLeft((data) => {
+      if (data.chatId === chatId) {
+        setIsOtherUserOnline(false);
+      }
+    });
+
+    // Listen for errors
+    const unsubscribeError = ownerChatSocket.onError((error) => {
+      console.error('Chat socket error:', error);
+      Alert.alert('Connection Error', error);
+    });
+
+    // Return cleanup function
+    return () => {
+      unsubscribeMessage();
+      unsubscribeConnection();
+      unsubscribeChatStatus();
+      unsubscribeUserJoined();
+      unsubscribeUserLeft();
+      unsubscribeError();
+    };
+  };
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -34,30 +154,69 @@ export default function OwnerChatConversation() {
     };
   }, []);
 
-  const handleSendMessage = () => {
-    if (message.trim() && currentChat) {
-      const newMessage: OwnerChatMessage = {
-        _id: `msg_${Date.now()}`,
+  const handleSendMessage = async () => {
+    if (message.trim() && currentChat && chatId) {
+      const messageText = message.trim();
+      const tempMessage: OwnerChatMessage = {
+        _id: `temp_${Date.now()}`,
         sender: 'owner',
-        text: message.trim(),
+        text: messageText,
         timestamp: new Date(),
       };
       
-      // Update the current chat with the new message
-      const updatedChat = {
-        ...currentChat,
-        messages: [...currentChat.messages, newMessage],
-        last_message: message.trim(),
-        last_message_time: new Date(),
-      };
+      // Optimistically update UI
+      setCurrentChat(prevChat => {
+        if (!prevChat) return null;
+        return {
+          ...prevChat,
+          messages: [...prevChat.messages, tempMessage],
+          last_message: messageText,
+          last_message_time: new Date(),
+        };
+      });
       
-      setCurrentChat(updatedChat);
       setMessage('');
       
       // Scroll to bottom after sending message
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
+
+      try {
+        if (socketConnected) {
+          // Send via socket (primary method)
+          ownerChatSocket.sendMessage(chatId as string, messageText);
+        } else {
+          // Fallback to REST API
+          console.log('Socket not connected, using REST API fallback');
+          await chatService.sendMessage({
+            chat_id: chatId as string,
+            sender: 'owner',
+            text: messageText
+          });
+          console.log('Message sent via REST API');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        
+        let errorMessage = 'Failed to send message';
+        if (__DEV__) {
+          errorMessage = `Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}\n\nThis might be because the backend is not running.`;
+        }
+        
+        Alert.alert('Error', errorMessage);
+        
+        // Remove the optimistic message on error
+        setCurrentChat(prevChat => {
+          if (!prevChat) return null;
+          return {
+            ...prevChat,
+            messages: prevChat.messages.filter(msg => msg._id !== tempMessage._id),
+            last_message: prevChat.messages.length > 1 ? prevChat.messages[prevChat.messages.length - 2].text : '',
+            last_message_time: prevChat.messages.length > 1 ? prevChat.messages[prevChat.messages.length - 2].timestamp : new Date(),
+          };
+        });
+      }
     }
   };
 
@@ -181,9 +340,14 @@ export default function OwnerChatConversation() {
             />
             
             <View className="flex-1">
-              <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
-                {currentChat.customer_name}
-              </Text>
+              <View className="flex-row items-center">
+                <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
+                  {currentChat.customer_name}
+                </Text>
+                {isOtherUserOnline && (
+                  <View className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
+                )}
+              </View>
               <View className="flex-row items-center">
                 {currentChat.booking_id && (
                   <Text className="text-xs text-gray-500 mr-2">
@@ -194,6 +358,13 @@ export default function OwnerChatConversation() {
                   <Text className="text-xs text-white font-medium">
                     {getStatusText(currentChat.status).split(' ')[0]}
                   </Text>
+                </View>
+                <View className="ml-2 flex-row items-center">
+                  {socketConnected ? (
+                    <Wifi size={12} color="#10B981" />
+                  ) : (
+                    <WifiOff size={12} color="#EF4444" />
+                  )}
                 </View>
               </View>
             </View>
@@ -223,7 +394,7 @@ export default function OwnerChatConversation() {
 
         {/* Message Input */}
         <View 
-          className="flex-row items-end px-4 py-3 bg-white"
+          className="flex-row items-end px-4 py-3 bg-white relative"
           style={{
             borderTopWidth: 1,
             borderTopColor: '#F3F4F6',
@@ -244,11 +415,12 @@ export default function OwnerChatConversation() {
               className="flex-1 text-base leading-5"
               multiline
               maxLength={500}
+              editable={socketConnected}
               style={{ 
                 minHeight: 20,
                 paddingTop: Platform.OS === 'ios' ? 0 : 2,
                 paddingBottom: Platform.OS === 'ios' ? 0 : 2,
-                color: '#111827', // Dark gray text color
+                color: socketConnected ? '#111827' : '#9CA3AF',
                 fontSize: 16,
               }}
             />
@@ -256,12 +428,12 @@ export default function OwnerChatConversation() {
           
           <TouchableOpacity
             onPress={handleSendMessage}
-            disabled={!message.trim()}
+            disabled={!message.trim() || !socketConnected}
             className={`w-12 h-12 rounded-full items-center justify-center ${
-              message.trim() ? 'bg-red-500' : 'bg-gray-300'
+              message.trim() && socketConnected ? 'bg-red-500' : 'bg-gray-300'
             }`}
             style={{
-              shadowColor: message.trim() ? '#EF4444' : '#9CA3AF',
+              shadowColor: message.trim() && socketConnected ? '#EF4444' : '#9CA3AF',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.3,
               shadowRadius: 4,
@@ -274,6 +446,13 @@ export default function OwnerChatConversation() {
               style={{ marginLeft: 2 }} // Small adjustment for visual centering
             />
           </TouchableOpacity>
+          
+          {/* Connection Status Indicator */}
+          {!socketConnected && (
+            <View className="absolute -top-8 right-4 bg-red-500 px-2 py-1 rounded-full">
+              <Text className="text-xs text-white">Offline</Text>
+            </View>
+          )}
         </View>
     </KeyboardAvoidingView>
   );

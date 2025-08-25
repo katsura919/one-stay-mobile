@@ -8,4 +8,5 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  resort_id?: string; // For owners - the resort they manage
 }

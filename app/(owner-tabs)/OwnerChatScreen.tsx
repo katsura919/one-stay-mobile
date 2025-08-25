@@ -1,12 +1,169 @@
-import React from 'react';
-import { View, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Text } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity, Image, Alert, RefreshControl } from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Search, MessageCircle } from 'lucide-react-native';
-import { dummyOwnerChats, OwnerChat } from '../../data/owner-chat-data';
+import { OwnerChat } from '../../data/owner-chat-data';
+import { ownerChatSocket, OwnerChatMessage } from '../../lib/owner-chat-socket';
+import { chatService } from '../../services/chatService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useResort } from '@/contexts/ResortContext';
 
 export default function ChatScreen() {
+  const [chats, setChats] = useState<OwnerChat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const { user } = useAuth();
+  const { resorts, loading: resortsLoading, hasResorts } = useResort();
+
+  useEffect(() => {
+    initializeChat();
+    return () => {
+      // Cleanup socket listeners
+      ownerChatSocket.disconnect();
+    };
+  }, []);
+
+  // Load chats when resorts are loaded
+  useEffect(() => {
+    if (!resortsLoading && hasResorts) {
+      loadChats();
+    }
+  }, [resortsLoading, hasResorts]);
+
+  const initializeChat = async () => {
+    try {
+      // Connect to socket
+      const connected = await ownerChatSocket.connect();
+      setSocketConnected(connected);
+      
+      if (!connected) {
+        Alert.alert('Connection Error', 'Failed to connect to chat service. You can still view messages but real-time updates won\'t work.');
+      }
+
+      // Set up socket listeners
+      setupSocketListeners();
+      
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+      Alert.alert('Error', 'Failed to initialize chat');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshChats = async () => {
+    setRefreshing(true);
+    try {
+      await loadChats();
+    } catch (error) {
+      console.error('Error refreshing chats:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const setupSocketListeners = () => {
+    // Listen for new messages
+    ownerChatSocket.onMessage((message: OwnerChatMessage) => {
+      updateChatWithNewMessage(message);
+    });
+
+    // Listen for connection changes
+    ownerChatSocket.onConnection((connected) => {
+      setSocketConnected(connected);
+    });
+
+    // Listen for errors
+    ownerChatSocket.onError((error) => {
+      console.error('Socket error:', error);
+    });
+  };
+
+  const loadChats = async () => {
+    try {
+      if (!user?.id) {
+        console.log('No user found for loading chats');
+        return;
+      }
+      
+      // Wait for resorts to load if they're still loading
+      if (resortsLoading) {
+        console.log('Waiting for resorts to load...');
+        return;
+      }
+      
+      // Check if owner has any resorts
+      if (!hasResorts || resorts.length === 0) {
+        console.log('No resorts found for owner. Cannot load chats without a resort.');
+        Alert.alert('No Resort Found', 'You need to create a resort first to receive messages from guests.');
+        setChats([]);
+        return;
+      }
+      
+      // Use the first resort's ID (or you could let owner select which resort's chats to view)
+      const resortId = resorts[0]._id;
+      
+      console.log('Loading chats for resort:', resortId);
+      const apiChats = await chatService.getResortChats(resortId);
+      console.log('API chats response:', apiChats);
+      
+      const transformedChats = apiChats.map(chat => chatService.transformApiChat(chat));
+      console.log('Transformed chats:', transformedChats);
+      
+      setChats(transformedChats);
+      
+    } catch (error) {
+      console.error('Error loading chats:', error);
+      
+      // For development, show the actual error but don't crash the app
+      if (__DEV__) {
+        Alert.alert('Development Error', `Failed to load chats: ${error instanceof Error ? error.message : 'Unknown error'}\n\nThis might be because:\n1. Backend is not running\n2. No resorts found in ResortContext\n3. API endpoint doesn't exist yet.`);
+      } else {
+        Alert.alert('Error', 'Failed to load chats. Please try again.');
+      }
+      
+      // Set empty chats array so the UI shows the empty state
+      setChats([]);
+    }
+  };
+
+  const updateChatWithNewMessage = (message: OwnerChatMessage) => {
+    setChats(prevChats => {
+      return prevChats.map(chat => {
+        if (chat._id === message.chatId) {
+          const updatedMessages = [...chat.messages, message];
+          return {
+            ...chat,
+            messages: updatedMessages,
+            last_message: message.text,
+            last_message_time: message.timestamp,
+            unread_count: message.sender === 'customer' ? chat.unread_count + 1 : chat.unread_count
+          };
+        }
+        return chat;
+      });
+    });
+  };
+  const handleChatPress = (chat: OwnerChat) => {
+    // Mark chat as read when opening
+    if (chat.unread_count > 0) {
+      ownerChatSocket.markAsRead(chat._id);
+      setChats(prevChats => 
+        prevChats.map(c => 
+          c._id === chat._id ? { ...c, unread_count: 0 } : c
+        )
+      );
+    }
+
+    router.push({
+      pathname: '/OwnerChatConvo',
+      params: { chatId: chat._id }
+    });
+  };
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
@@ -27,13 +184,6 @@ export default function ChatScreen() {
         day: 'numeric' 
       });
     }
-  };
-
-  const handleChatPress = (chat: OwnerChat) => {
-    router.push({
-      pathname: '/OwnerChatConvo',
-      params: { chatId: chat._id }
-    });
   };
 
   const getStatusColor = (status: string) => {
@@ -146,42 +296,77 @@ export default function ChatScreen() {
         }}
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-2xl font-bold text-gray-900">Messages</Text>
-          <TouchableOpacity className="p-2 rounded-full bg-gray-100">
-            <Search size={20} color="#6B7280" />
-          </TouchableOpacity>
+          <View className="flex-row items-center">
+            <Text className="text-2xl font-bold text-gray-900">Messages</Text>
+            {__DEV__ && (
+              <View className="ml-3 bg-blue-100 px-2 py-1 rounded-full">
+                <Text className="text-xs text-blue-600">API Mode</Text>
+              </View>
+            )}
+          </View>
+          <View className="flex-row items-center">
+            {!socketConnected && (
+              <View className="mr-3 bg-red-100 px-2 py-1 rounded-full">
+                <Text className="text-xs text-red-600">Offline</Text>
+              </View>
+            )}
+            <TouchableOpacity className="p-2 rounded-full bg-gray-100">
+              <Search size={20} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      {/* Chat List */}
-      {dummyOwnerChats.length > 0 ? (
-        <ScrollView 
-          className="flex-1" 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 8 }}
-        >
-          {dummyOwnerChats.map((chat, index) => (
-            <View key={chat._id}>
-              {renderChatItem(chat)}
-              {index < dummyOwnerChats.length - 1 && (
-                <View className="h-3" />
-              )}
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
-        /* Empty State */
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
-            <MessageCircle size={32} color="#9CA3AF" />
-          </View>
-          <Text className="text-xl font-semibold text-gray-900 mb-2 text-center">
-            No guest messages
-          </Text>
-          <Text className="text-gray-500 text-center leading-5">
-            When guests book your resort, their conversations will appear here
+      {/* Loading State */}
+      {(loading || resortsLoading) ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" />
+          <Text className="mt-4 text-gray-600">
+            {resortsLoading ? 'Loading resort data...' : 'Loading chats...'}
           </Text>
         </View>
+      ) : (
+        /* Chat List */
+        chats.length > 0 ? (
+          <ScrollView 
+            className="flex-1" 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 8 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={refreshChats}
+                tintColor="#EC4899"
+                colors={["#EC4899"]}
+              />
+            }
+          >
+            {chats.map((chat, index) => (
+              <View key={chat._id}>
+                {renderChatItem(chat)}
+                {index < chats.length - 1 && (
+                  <View className="h-3" />
+                )}
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          /* Empty State */
+          <View className="flex-1 items-center justify-center px-6">
+            <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
+              <MessageCircle size={32} color="#9CA3AF" />
+            </View>
+            <Text className="text-xl font-semibold text-gray-900 mb-2 text-center">
+              {!hasResorts ? 'No Resort Found' : 'No guest messages'}
+            </Text>
+            <Text className="text-gray-500 text-center leading-5">
+              {!hasResorts 
+                ? 'Create a resort first to receive messages from guests' 
+                : 'When guests book your resort, their conversations will appear here'
+              }
+            </Text>
+          </View>
+        )
       )}
     </SafeAreaView>
   );
