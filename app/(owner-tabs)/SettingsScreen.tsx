@@ -1,31 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, Text, Alert } from 'react-native';
 import { Card, List, Switch, Button, Avatar, Divider } from 'react-native-paper';
 import { User, Bell, Shield, HelpCircle, LogOut, Edit, MapPin } from 'lucide-react-native';
-import { getCurrentUser, logout } from '../../utils/auth';
-import { User as UserType } from '../../types/user';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SettingsScreen() {
-  const [user, setUser] = useState<UserType | null>(null);
+  const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState({
     bookings: true,
     messages: true,
     reviews: true,
     marketing: false
   });
-
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
-      const userData = await getCurrentUser();
-      setUser(userData);
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  };
 
   const handleLogout = () => {
     Alert.alert(

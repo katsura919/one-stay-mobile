@@ -3,9 +3,9 @@ import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { Image, View, Alert } from 'react-native';
 import { Button, IconButton, Text, TextInput } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../services/authService';
 import { User, UserRole } from '../types/user';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginScreenProps {
   onLogin?: (email: string, password: string) => Promise<void>;
@@ -13,6 +13,7 @@ interface LoginScreenProps {
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -48,16 +49,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             : 'https://randomuser.me/api/portraits/women/32.jpg'
         };
 
-        // Store both user data and token
-        await AsyncStorage.setItem('user', JSON.stringify(user));
-        await AsyncStorage.setItem('token', response.token);
-        
-        // Navigate based on role
-        if (response.user.role === 'owner') {
-          router.replace('/(owner-tabs)/Dashboard' as any);
-        } else {
-          router.replace('/(customer-tabs)/HomeScreen' as any);
-        }
+        // Use the Auth context login method
+        await login(user, response.token);
       }
     } catch (error) {
       console.error('Login error:', error);

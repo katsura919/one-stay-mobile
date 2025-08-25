@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
 
 interface JWTPayload {
@@ -8,11 +7,12 @@ interface JWTPayload {
   exp: number;
 }
 
+// Note: Use useAuth().logout instead of this function
+// This is kept for backward compatibility
 export const logout = async () => {
   try {
     await AsyncStorage.removeItem('user');
     await AsyncStorage.removeItem('token');
-    router.replace('/');
   } catch (error) {
     console.error('Error during logout:', error);
   }
