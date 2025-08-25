@@ -13,8 +13,8 @@ export default function RootLayout() {
   
   return (
     <AuthProvider>
-        <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
-        <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
+      <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
+      <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
     </AuthProvider>
   );
 }

@@ -88,4 +88,20 @@ export const resortAPI = {
       throw new Error('Network error occurred');
     }
   },
+
+  getResortsByOwner: async (ownerId: string, token: string): Promise<Resort[]> => {
+    try {
+      const response = await apiClient.get(`/resort/owner/${ownerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to fetch owner resorts');
+      }
+      throw new Error('Network error occurred');
+    }
+  },
 };

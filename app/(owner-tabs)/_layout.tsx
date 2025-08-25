@@ -1,10 +1,12 @@
 import { Tabs } from "expo-router";
 import { BarChart3, Calendar, MessageCircle, Settings } from "lucide-react-native";
+import { ResortProvider } from "@/contexts/ResortContext";
 
 export default function OwnerTabLayout() {
   return (
-    <Tabs
-      screenOptions={{
+    <ResortProvider>
+      <Tabs
+        screenOptions={{
         tabBarActiveTintColor: "#EC4899", // Pink color for owner theme
         tabBarInactiveTintColor: "#717171",
         tabBarStyle: {
@@ -68,5 +70,6 @@ export default function OwnerTabLayout() {
         }}
       />
     </Tabs>
+    </ResortProvider>
   );
 }
