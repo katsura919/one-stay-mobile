@@ -24,7 +24,6 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
         <Header />
-        <SearchBar />
         <ExplorePlaces />
         <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
         <HotelCardList />

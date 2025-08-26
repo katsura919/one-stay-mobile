@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image, TextInput } from 'react-native';
-import { Search, MapPin, Star, ChevronLeft, X, History } from 'lucide-react-native';
+import { Search, X, MapPin, Clock, Star, ChevronLeft, History } from 'lucide-react-native';
 import { resortAPI, Resort } from '@/services/resortService';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -151,7 +151,7 @@ export default function SearchScreen() {
                         {searchResults.map((resort) => (
                             <TouchableOpacity
                                 key={resort._id}
-                                className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                className="bg-white rounded-2xl shadow-sm overflow-hidden"
                                 activeOpacity={0.7}
                                 onPress={() => {
                                     // Navigate to resort details
@@ -161,46 +161,62 @@ export default function SearchScreen() {
                                     });
                                 }}
                             >
-                                <View className="flex-row">
-                                    {/* Resort Image */}
-                                    <View className="w-20 h-20 rounded-lg mr-4 overflow-hidden bg-gray-200">
-                                        {resort.image ? (
-                                            <Image 
-                                                source={{ uri: resort.image }} 
-                                                className="w-full h-full"
-                                                resizeMode="cover"
-                                            />
-                                        ) : (
-                                            <View className="w-full h-full items-center justify-center">
-                                                <Text className="text-xs text-gray-500 font-inter">No Image</Text>
-                                            </View>
-                                        )}
-                                    </View>
+                                {/* Resort Image */}
+                                <View className="relative m-2">
+                                    {resort.image ? (
+                                        <Image 
+                                            source={{ uri: resort.image }} 
+                                            className="w-full h-48 rounded-lg"
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <View className="w-full h-48 bg-gray-200 items-center justify-center">
+                                            <Text className="text-sm text-gray-500 font-inter">No Image</Text>
+                                        </View>
+                                    )}
+                                    
+                                </View>
 
-                                    {/* Resort Info */}
-                                    <View className="flex-1">
-                                        <Text className="text-lg font-semibold font-inter text-gray-900 mb-1">
+                                {/* Resort Info */}
+                                <View className="p-4">
+                                    {/* First Row - Resort Name and Address */}
+                                    <View className="flex-row items-start justify-between ">
+                                        <Text className="text-lg font-semibold font-inter text-gray-900 flex-1 mr-4">
                                             {resort.resort_name}
                                         </Text>
-                                        
-                                        <View className="flex-row items-center mb-2">
+                                        <View className="flex-row items-center">
                                             <MapPin color="#6B7280" size={14} />
-                                            <Text className="text-sm text-gray-600 ml-1 flex-1 font-inter" numberOfLines={1}>
+                                            <Text className="text-sm text-gray-600 ml-1 font-inter" numberOfLines={1}>
                                                 {resort.location.address}
                                             </Text>
                                         </View>
-
-                                        {resort.description && (
-                                            <Text className="text-sm text-gray-600 font-inter" numberOfLines={2}>
-                                                {resort.description}
-                                            </Text>
-                                        )}
-
-                                        {/* Rating placeholder */}
-                                        <View className="flex-row items-center mt-2">
+                                    </View>
+                                    
+                                    {/* Description */}
+                                    {resort.description && (
+                                        <Text className="text-sm text-gray-600 font-inter " numberOfLines={2}>
+                                            {resort.description}
+                                        </Text>
+                                    )}
+                                    
+                                    {/* Bottom Row - Rating and Price */}
+                                    <View className="flex-row items-center justify-between">
+                                        <View className="flex-row items-center">
                                             <Star color="#FCD34D" size={14} fill="#FCD34D" />
-                                            <Text className="text-sm text-gray-600 ml-1 font-inter">
-                                                4.5 • New Resort
+                                            <Text className="text-sm text-gray-900 ml-1 font-inter font-medium">
+                                                4.8
+                                            </Text>
+                                            <Text className="text-sm text-gray-500 ml-1 font-inter">
+                                                (1800 reviews)
+                                            </Text>
+                                        </View>
+                                        
+                                        <View className="items-end">
+                                            <Text className="text-lg font-bold font-inter text-gray-900">
+                                                $90
+                                            </Text>
+                                            <Text className="text-sm text-gray-500 font-inter">
+                                                /Night
                                             </Text>
                                         </View>
                                     </View>
