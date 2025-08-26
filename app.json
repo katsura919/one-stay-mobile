@@ -20,7 +20,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": false,
-
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDummy-Replace-With-Your-Google-Maps-API-Key"
@@ -55,7 +54,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

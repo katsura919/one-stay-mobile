@@ -1,10 +1,15 @@
 import React from 'react';
 import { Image, Text, View, TouchableOpacity } from 'react-native';
-import { Bell } from 'lucide-react-native';
+import { Bell, Search } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
 
 const Header = () => {
   const { user } = useAuth();
+
+  const handleSearchPress = () => {
+    router.push('/SearchScreen');
+  };
 
   return (
     <View className="flex-row items-center justify-between px-6 pt-12 pb-4">
@@ -25,8 +30,12 @@ const Header = () => {
         </View>
       </View>
       
-      <TouchableOpacity className="p-2">
-        <Bell color="#374151" size={24} />
+      <TouchableOpacity 
+        className="p-2" 
+        onPress={handleSearchPress}
+        activeOpacity={0.7}
+      >
+        <Search color="#374151" size={24} />
       </TouchableOpacity>
     </View>
   );

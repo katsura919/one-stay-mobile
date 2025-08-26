@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global font configuration */
+@layer base {
+  * {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
