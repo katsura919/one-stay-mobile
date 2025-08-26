@@ -1,29 +1,37 @@
 import { Tabs } from "expo-router";
 import { Heart, MessageCircle, Search, User } from "lucide-react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#FF5A5F", // Airbnb's signature coral color
-        tabBarInactiveTintColor: "#717171",
+        tabBarActiveTintColor: "#FFFFFF",
+        tabBarInactiveTintColor: "#9CA3AF",
         tabBarStyle: {
-          backgroundColor: "#ffffff",
-          borderTopWidth: 1,
-          borderTopColor: "#EBEBEB",
-          paddingTop: 5,
-          paddingBottom: 5,
-          height: 70,
-          elevation: 8,
+          backgroundColor: "#1F2937",
+          borderTopWidth: 0,
+          borderRadius: 25,
+          marginHorizontal: 20,
+          marginBottom: Math.max(insets.bottom + 10, 20),
+          paddingTop: 8,
+          paddingBottom: 8,
+          paddingHorizontal: 15,
+          height: 60,
+          position: 'absolute',
+          elevation: 10,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
-          marginTop: 4,
+          display: 'none', // Hide labels for cleaner look like the image
+        },
+        tabBarIconStyle: {
+          marginTop: 0,
         },
       }}
     >
@@ -65,12 +73,6 @@ export default function TabLayout() {
             <User color={color} size={size} />
           ),
           headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="ChatConversation"
-        options={{
-          href: null, // Hide from tabs
         }}
       />
     </Tabs>

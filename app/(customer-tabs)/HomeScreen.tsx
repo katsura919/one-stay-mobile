@@ -6,9 +6,9 @@ import CategoryTabs from '../../components/CategoryTabs';
 import ExplorePlaces from '../../components/ExplorePlaces';
 import Header from '../../components/Header';
 import HotelCardList from '../../components/HotelCardList';
-import SearchBar from '../../components/SearchBar';
+import SearchBar from '../../components/home-search-bar';
 import { useAuth } from '@/contexts/AuthContext';
-
+import { SafeAreaView } from 'react-native';
 export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('Amazing pools');
   const { logout } = useAuth();
@@ -21,7 +21,7 @@ export default function HomeScreen() {
 
   // Default fallback home screen (for guests or users without specific roles)
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
         <Header />
         <SearchBar />
@@ -30,6 +30,6 @@ export default function HomeScreen() {
         <HotelCardList />
         <View className="mb-24" />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
