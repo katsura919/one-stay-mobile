@@ -19,7 +19,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
+      "navigationBar": {
+        "visible": "visible",
+        "backgroundColor": "#000000"
+      },
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDummy-Replace-With-Your-Google-Maps-API-Key"
