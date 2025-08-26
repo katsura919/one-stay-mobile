@@ -4,17 +4,20 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "../global.css";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
+
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("transparent");
     NavigationBar.setVisibilityAsync("hidden");
   }, []);
   
   return (
-    <AuthProvider>
-      <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
-      <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
+        <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
