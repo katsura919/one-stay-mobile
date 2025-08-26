@@ -20,10 +20,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": false,
-      "navigationBar": {
-        "visible": "visible",
-        "backgroundColor": "#000000"
-      },
+
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDummy-Replace-With-Your-Google-Maps-API-Key"
@@ -41,6 +38,13 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to help you find nearby resorts and set your resort location."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you upload resort images.",
+          "cameraPermission": "The app accesses your camera to let you take photos of your resort."
         }
       ],
       [

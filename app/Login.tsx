@@ -114,7 +114,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               marginBottom: 8, 
               elevation: 2 
             }}
-            buttonColor="#EC4899"
+            buttonColor="#1F2937"
             labelStyle={{ fontWeight: 'bold', fontSize: 16 }}
           >
             {loading ? 'Signing In...' : 'Login'}
@@ -124,7 +124,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             mode="text" 
             onPress={() => router.push('/Register')} 
             style={{ marginBottom: 8 }} 
-            labelStyle={{ color: '#EC4899', fontWeight: '600' }}
+            labelStyle={{ color: '#1F2937', fontWeight: '600' }}
           >
             Don't have an account? Register
           </Button>

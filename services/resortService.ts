@@ -21,6 +21,17 @@ export interface ResortData {
   image?: string;
 }
 
+export interface ResortFormData {
+  resort_name: string;
+  location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
+  description?: string;
+  imageUri?: string; // For file upload
+}
+
 export interface Resort {
   _id: string;
   owner_id: string;
@@ -48,6 +59,76 @@ export const resortAPI = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Failed to create resort');
+      }
+      throw new Error('Network error occurred');
+    }
+  },
+
+  createResortWithImage: async (resortData: ResortFormData, token: string): Promise<Resort> => {
+    try {
+      const formData = new FormData();
+      
+      formData.append('resort_name', resortData.resort_name);
+      formData.append('location', JSON.stringify(resortData.location));
+      
+      if (resortData.description) {
+        formData.append('description', resortData.description);
+      }
+      
+      if (resortData.imageUri) {
+        const imageFile = {
+          uri: resortData.imageUri,
+          type: 'image/jpeg',
+          name: `resort-${Date.now()}.jpg`,
+        } as any;
+        formData.append('image', imageFile);
+      }
+
+      // Debug logging
+      console.log('FormData being sent:');
+      console.log('- resort_name:', resortData.resort_name);
+      console.log('- location (stringified):', JSON.stringify(resortData.location));
+      console.log('- description:', resortData.description);
+      console.log('- imageUri:', resortData.imageUri ? 'Present' : 'Not present');
+
+      const response = await axios.post(`${API_BASE_URL}/resort`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to create resort');
+      }
+      throw new Error('Network error occurred');
+    }
+  },
+
+  updateResortImage: async (resortId: string, imageUri: string, token: string): Promise<Resort> => {
+    try {
+      const formData = new FormData();
+      
+      const imageFile = {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `resort-${Date.now()}.jpg`,
+      } as any;
+      formData.append('image', imageFile);
+
+      const response = await axios.put(`${API_BASE_URL}/resort/${resortId}/image`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data.resort;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to update resort image');
       }
       throw new Error('Network error occurred');
     }

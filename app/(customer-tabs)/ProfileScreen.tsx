@@ -51,7 +51,7 @@ export default function ProfileScreen() {
         mode="contained"
         onPress={handleLogout}
         buttonColor="#ef4444"
-        className="mt-auto mb-8"
+        className="mt-auto mb-10"
         labelStyle={{ color: 'white', fontWeight: 'bold' }}
       >
         Logout
