@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Navigate to appropriate screen based on user role
         if (userData.role === 'customer') {
-          router.replace('/(customer-tabs)/HomeScreen');
+          router.replace('/customer/(customer-tabs)/HomeScreen');
         } else if (userData.role === 'owner') {
           router.replace('/(owner-tabs)/Dashboard');
         }
@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Navigate to appropriate screen based on user role
       if (userData.role === 'customer') {
-        router.replace('/(customer-tabs)/HomeScreen');
+        router.replace('/customer/(customer-tabs)/HomeScreen');
       } else if (userData.role === 'owner') {
         router.replace('/(owner-tabs)/Dashboard');
       }

@@ -4,9 +4,9 @@ import { Text, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { MessageCircle, Search } from 'lucide-react-native';
-import { Chat } from '../../data/chat-data';
-import { customerChatSocket, CustomerChatMessage } from '../../lib/customer-chat-socket';
-import { chatService } from '../../services/chatService';
+import { Chat } from '../../../data/chat-data';
+import { customerChatSocket, CustomerChatMessage } from '../../../lib/customer-chat-socket';
+import { chatService } from '../../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ChatScreen() {
@@ -167,7 +167,7 @@ export default function ChatScreen() {
     }
 
     router.push({
-      pathname: '/CustomerChatConvo',
+      pathname: '/customer/CustomerChatConvo',
       params: { chatId: chat._id }
     });
   };

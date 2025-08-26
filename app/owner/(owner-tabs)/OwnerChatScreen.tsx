@@ -4,9 +4,9 @@ import { Text, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Search, MessageCircle } from 'lucide-react-native';
-import { OwnerChat } from '../../data/owner-chat-data';
-import { ownerChatSocket, OwnerChatMessage } from '../../lib/owner-chat-socket';
-import { chatService } from '../../services/chatService';
+import { OwnerChat } from '../../../data/owner-chat-data';
+import { ownerChatSocket, OwnerChatMessage } from '../../../lib/owner-chat-socket';
+import { chatService } from '../../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
 
@@ -159,7 +159,7 @@ export default function ChatScreen() {
     }
 
     router.push({
-      pathname: '/OwnerChatConvo',
+      pathname: '/owner/OwnerChatConvo',
       params: { chatId: chat._id }
     });
   };

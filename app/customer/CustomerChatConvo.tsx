@@ -4,9 +4,9 @@ import { Text, ActivityIndicator } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, Phone, MoreVertical } from 'lucide-react-native';
-import { Chat, ChatMessage } from '../data/chat-data';
-import { customerChatSocket, CustomerChatMessage } from '../lib/customer-chat-socket';
-import { chatService, ChatApiResponse } from '../services/chatService';
+import { Chat, ChatMessage } from '../../data/chat-data';
+import { customerChatSocket, CustomerChatMessage } from '../../lib/customer-chat-socket';
+import { chatService, ChatApiResponse } from '../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ChatConversation() {

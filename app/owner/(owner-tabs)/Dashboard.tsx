@@ -16,9 +16,9 @@ import {
   MessageSquare,
   Bell
 } from 'lucide-react-native';
-import { User } from '../../types/user';
-import { getCurrentUser, logout } from '../../utils/auth';
-import { useResort } from '../../contexts/ResortContext';
+import { User } from '../../../types/user';
+import { getCurrentUser, logout } from '../../../utils/auth';
+import { useResort } from '../../../contexts/ResortContext';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;

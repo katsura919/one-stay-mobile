@@ -4,9 +4,9 @@ import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, Phone, MoreVertical, Wifi, WifiOff } from 'lucide-react-native';
-import { OwnerChat, OwnerChatMessage } from '../data/owner-chat-data';
-import { ownerChatSocket } from '../lib/owner-chat-socket';
-import { chatService } from '../services/chatService';
+import { OwnerChat, OwnerChatMessage } from '../../data/owner-chat-data';
+import { ownerChatSocket } from '../../lib/owner-chat-socket';
+import { chatService } from '../../services/chatService';
 
 export default function OwnerChatConversation() {
   const { chatId } = useLocalSearchParams();

@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import CategoryTabs from '../../components/CategoryTabs';
-import ExplorePlaces from '../../components/ExplorePlaces';
-import Header from '../../components/Header';
-import HotelCardList from '../../components/HotelCardList';
-import SearchBar from '../../components/home-search-bar';
+import CategoryTabs from '../../../components/CategoryTabs';
+import ExplorePlaces from '../../../components/ExplorePlaces';
+import Header from '../../../components/Header';
+import HotelCardList from '../../../components/HotelCardList';
+import SearchBar from '../../../components/home-search-bar';
 import { useAuth } from '@/contexts/AuthContext';
 import { SafeAreaView } from 'react-native';
 export default function HomeScreen() {

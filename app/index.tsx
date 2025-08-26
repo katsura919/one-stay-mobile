@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { ActivityIndicator } from 'react-native-paper';
-import Login from "./Login";
+import Login from "./auth/Login";
 
 export default function Index() {
   const { isLoading } = useAuth();

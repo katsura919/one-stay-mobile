@@ -3,8 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { Image, View, Alert } from 'react-native';
 import { Button, IconButton, Text, TextInput } from 'react-native-paper';
-import { authAPI } from '../services/authService';
-import { User, UserRole } from '../types/user';
+import { authAPI } from '../../services/authService';
+import { User, UserRole } from '../../types/user';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginScreenProps {
@@ -70,7 +70,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       <View className="flex-1 w-full h-full justify-center items-center bg-white px-6">
         <View className="w-full max-w-md bg-white rounded-3xl py-8 px-6 items-center">
           <Image 
-            source={require('../assets/images/splash-icon.png')} 
+            source={require('../../assets/images/splash-icon.png')} 
             className="w-24 h-24 mb-6 rounded-2xl" 
             style={{ resizeMode: 'contain' }} 
           />
@@ -122,7 +122,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           
           <Button 
             mode="text" 
-            onPress={() => router.push('/Register')} 
+            onPress={() => router.push('/auth/Register')} 
             style={{ marginBottom: 8 }} 
             labelStyle={{ color: '#1F2937', fontWeight: '600' }}
           >

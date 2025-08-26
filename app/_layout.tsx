@@ -15,7 +15,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="dark" backgroundColor="transparent" translucent={true} />
+        <StatusBar style="dark" translucent={true} />
         <Stack initialRouteName="index" screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </SafeAreaProvider>

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Image, View, Alert, ScrollView } from 'react-native';
 import { Button, IconButton, Text, TextInput, useTheme, SegmentedButtons } from 'react-native-paper';
 import { router } from 'expo-router';
-import { authAPI } from '../services/authService';
+import { authAPI } from '../../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegisterScreen({ navigation }: any) {
@@ -74,7 +74,7 @@ export default function RegisterScreen({ navigation }: any) {
           [
             {
               text: 'Start Exploring',
-              onPress: () => router.replace('/(customer-tabs)/HomeScreen')
+              onPress: () => router.replace('/customer/(customer-tabs)/HomeScreen')
             }
           ]
         );
@@ -93,7 +93,7 @@ export default function RegisterScreen({ navigation }: any) {
   return (
     <ScrollView className="flex-1 bg-cyan-50">
       <View className="flex-1 justify-center items-center p-4 pt-16">
-        <Image source={require('../assets/images/splash-icon.png')} className="w-20 h-20 mb-4" />
+        <Image source={require('../../assets/images/splash-icon.png')} className="w-20 h-20 mb-4" />
         <Text variant="headlineMedium" className="text-orange-400 font-bold mb-2">
           Create your OneStay account
         </Text>
@@ -165,7 +165,7 @@ export default function RegisterScreen({ navigation }: any) {
         >
           {role === 'customer' ? 'Register as Guest' : 'Register as Resort Owner'}
         </Button>
-        <Button mode="text" onPress={() => navigation?.navigate ? navigation.navigate('Login') : router.push('/Login')}>
+        <Button mode="text" onPress={() => navigation?.navigate ? navigation.navigate('Login') : router.push('/auth/Login')}>
           Already have an account? Login
         </Button>
         <IconButton icon="sun" size={32} iconColor="#FFD600" className="mt-6" />
