@@ -1,14 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
-
-// Create axios instance with base configuration
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { apiRequest, authenticatedApiRequest, API_BASE_URL } from '../utils/api';
 
 export interface ResortData {
   resort_name: string;
@@ -50,17 +40,16 @@ export interface Resort {
 export const resortAPI = {
   createResort: async (resortData: ResortData, token: string): Promise<Resort> => {
     try {
-      const response = await apiClient.post('/resort', resortData, {
+      const response = await authenticatedApiRequest('/resort', {
+        method: 'POST',
+        body: JSON.stringify(resortData),
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      return response.data;
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to create resort');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Failed to create resort');
     }
   },
 
@@ -91,19 +80,23 @@ export const resortAPI = {
       console.log('- description:', resortData.description);
       console.log('- imageUri:', resortData.imageUri ? 'Present' : 'Not present');
 
-      const response = await axios.post(`${API_BASE_URL}/resort`, formData, {
+      const response = await fetch(`${API_BASE_URL}/resort`, {
+        method: 'POST',
+        body: formData,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to create resort');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
-      throw new Error('Network error occurred');
+      
+      return await response.json();
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to create resort');
     }
   },
 
@@ -118,71 +111,71 @@ export const resortAPI = {
       } as any;
       formData.append('image', imageFile);
 
-      const response = await axios.put(`${API_BASE_URL}/resort/${resortId}/image`, formData, {
+      const response = await fetch(`${API_BASE_URL}/resort/${resortId}/image`, {
+        method: 'PUT',
+        body: formData,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      return response.data.resort;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to update resort image');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
-      throw new Error('Network error occurred');
+      
+      const responseData = await response.json();
+      return responseData.resort;
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to update resort image');
     }
   },
 
   getAllResorts: async (): Promise<Resort[]> => {
     try {
-      const response = await apiClient.get('/resort');
-      return response.data;
+      const response = await apiRequest('/resort', {
+        method: 'GET',
+      });
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to fetch resorts');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch resorts');
     }
   },
 
   searchResorts: async (query: string): Promise<Resort[]> => {
     try {
-      const response = await apiClient.get(`/resort/search?q=${encodeURIComponent(query)}`);
-      return response.data;
+      const response = await apiRequest(`/resort/search?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+      });
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to search resorts');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Failed to search resorts');
     }
   },
 
   getResortById: async (id: string): Promise<Resort> => {
     try {
-      const response = await apiClient.get(`/resort/${id}`);
-      return response.data;
+      const response = await apiRequest(`/resort/${id}`, {
+        method: 'GET',
+      });
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to fetch resort');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch resort');
     }
   },
 
   getResortsByOwner: async (ownerId: string, token: string): Promise<Resort[]> => {
     try {
-      const response = await apiClient.get(`/resort/owner/${ownerId}`, {
+      const response = await authenticatedApiRequest(`/resort/owner/${ownerId}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      return response.data;
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to fetch owner resorts');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch owner resorts');
     }
   },
 };

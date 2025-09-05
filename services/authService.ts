@@ -1,14 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
-
-// Create axios instance with base configuration
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { apiRequest } from '../utils/api';
 
 export interface LoginResponse {
   token: string;
@@ -41,28 +31,28 @@ export interface RegisterData {
 export const authAPI = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await apiClient.post('/auth/login', {
-        email,
-        password,
+      const response = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
-      return response.data;
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Login failed');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
     }
   },
 
   register: async (userData: RegisterData): Promise<RegisterResponse> => {
     try {
-      const response = await apiClient.post('/auth/register', userData);
-      return response.data;
+      const response = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+      return response;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Registration failed');
-      }
-      throw new Error('Network error occurred');
+      throw new Error(error instanceof Error ? error.message : 'Registration failed');
     }
   },
 };
