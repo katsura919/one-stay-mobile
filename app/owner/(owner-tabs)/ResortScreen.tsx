@@ -103,7 +103,7 @@ export default function ResortScreen() {
         {/* Property Cards */}
         <View >
           {resorts.map((resort) => (
-            <TouchableOpacity key={resort._id} style={{ marginBottom: 32 }}>
+            <View key={resort._id} style={{ marginBottom: 32 }}>
               {/* Image Container - Cover Photo Style - Full Width */}
               <View style={{ position: 'relative' }}>
                 {resort.image ? (
@@ -283,7 +283,7 @@ export default function ResortScreen() {
                   resortName={resort.resort_name}
                 />
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
         

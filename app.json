@@ -24,7 +24,13 @@
         "googleMaps": {
           "apiKey": "AIzaSyDummy-Replace-With-Your-Google-Maps-API-Key"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.katsuragik919.onestay"
     },
     "web": {
       "bundler": "metro",
@@ -59,6 +65,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8a83a082-bc55-4c91-a059-ffa274ed9355"
+      }
     }
   }
 }
