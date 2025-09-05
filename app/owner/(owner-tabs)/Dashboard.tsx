@@ -1,62 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { Card, Button, FAB, IconButton, Avatar, Chip, ProgressBar, Surface } from 'react-native-paper';
+import { ScrollView, View, Image, TouchableOpacity } from 'react-native';
+import { 
+  Card, 
+  Button, 
+  FAB, 
+  IconButton, 
+  Avatar, 
+  Chip, 
+  Surface, 
+  Title, 
+  Paragraph, 
+  Subheading,
+  Caption,
+  Divider,
+  Text
+} from 'react-native-paper';
 import { router } from 'expo-router';
 import { 
-  TrendingUp, 
-  Calendar, 
-  Users, 
   Star,
-  Eye,
-  Edit3,
   Plus,
-  ArrowUpRight,
-  ArrowDownRight,
   MapPin,
-  MessageSquare,
-  Bell
+  Bell,
+  Heart,
+  Share,
+  MoreHorizontal
 } from 'lucide-react-native';
 import { User } from '../../../types/user';
-import { getCurrentUser, logout } from '../../../utils/auth';
+import { getCurrentUser } from '../../../utils/auth';
 import { useResort } from '../../../contexts/ResortContext';
-
-const { width } = Dimensions.get('window');
-const cardWidth = (width - 48) / 2;
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('This Month');
   const { resorts, loading, error, refreshResorts } = useResort();
-
-  // Mock data - replace with real API data
-  const stats = {
-    bookings: { amount: '248', change: '+8.2%', isPositive: true },
-    occupancy: { amount: '94%', change: '-2.1%', isPositive: false },
-    rating: { amount: '4.8', change: '+0.3', isPositive: true }
-  };
-
-  const properties = [
-    {
-      id: 1,
-      name: 'Sunset Paradise Resort',
-      image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500',
-      location: 'Boracay, Philippines',
-      price: '₱2,500',
-      bookings: 28,
-      rating: 4.9,
-      occupancy: 95
-    },
-    {
-      id: 2,
-      name: 'Mountain Breeze Retreat',
-      image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=500',
-      location: 'Baguio, Philippines',
-      price: '₱1,800',
-      bookings: 18,
-      rating: 4.7,
-      occupancy: 88
-    }
-  ];
 
   useEffect(() => {
     loadUserData();
@@ -71,295 +46,224 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
-
   // Header Component
   const DashboardHeader = () => (
-    <View className="px-6 pt-12 pb-6 bg-white">
-      <View className="flex-row items-center justify-between mb-6">
-        <View className="flex-1">
-          <Text className="text-sm text-gray-500">Welcome,</Text>
-          <Text className="text-2xl font-bold text-gray-900">
+    <Surface style={{ paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20 }} elevation={1}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <View style={{ flex: 1 }}>
+          <Caption>Good morning,</Caption>
+          <Title style={{ fontSize: 28, fontWeight: '700' }}>
             {user?.name?.split(' ')[0] || 'Owner'}
-          </Text>
+          </Title>
         </View>
-        <View className="flex-row items-center space-x-3">
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <IconButton 
-            icon={({ size }) => <Bell size={size} color="#6B7280" />}
-            size={24}
-            className="bg-gray-50"
+            icon={() => <Bell size={20} />} 
+            mode="contained-tonal"
+            size={20}
           />
-          <TouchableOpacity>
-            <Avatar.Image 
-              size={48} 
-              source={{ uri: user?.avatar || 'https://randomuser.me/api/portraits/men/45.jpg' }}
-            />
-          </TouchableOpacity>
+          <Avatar.Image 
+            size={44} 
+            source={{ uri: user?.avatar || 'https://randomuser.me/api/portraits/men/45.jpg' }}
+          />
         </View>
       </View>
 
-    </View>
+      <View style={{ flexDirection: 'row', gap: 16 }}>
+        <Surface style={{ flex: 1, padding: 16, borderRadius: 16, alignItems: 'center' }} elevation={2}>
+          <Title style={{ fontSize: 24, fontWeight: '700' }}>248</Title>
+          <Caption style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Bookings</Caption>
+        </Surface>
+        <Surface style={{ flex: 1, padding: 16, borderRadius: 16, alignItems: 'center' }} elevation={2}>
+          <Title style={{ fontSize: 24, fontWeight: '700' }}>4.8</Title>
+          <Caption style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Avg Rating</Caption>
+        </Surface>
+        <Surface style={{ flex: 1, padding: 16, borderRadius: 16, alignItems: 'center' }} elevation={2}>
+          <Title style={{ fontSize: 24, fontWeight: '700' }}>94%</Title>
+          <Caption style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Occupancy</Caption>
+        </Surface>
+      </View>
+    </Surface>
   );
 
   // Resort Details Section Component
   const ResortDetailsSection = () => {
     if (loading) {
       return (
-        <View className="px-6 mb-6">
-          <Surface className="p-6 rounded-xl" elevation={2}>
-            <Text className="text-center text-gray-500">Loading resort details...</Text>
-          </Surface>
+        <View style={{ padding: 20 }}>
+          <Card style={{ padding: 40, alignItems: 'center' }}>
+            <Paragraph>Loading your properties...</Paragraph>
+          </Card>
         </View>
       );
     }
 
     if (error) {
       return (
-        <View className="px-6 mb-6">
-          <Surface className="p-6 rounded-xl" elevation={2}>
-            <Text className="text-center text-red-500">Error loading resort: {error}</Text>
-            <Button mode="outlined" onPress={refreshResorts} className="mt-3">
-              Retry
+        <View style={{ padding: 20 }}>
+          <Card style={{ padding: 40, alignItems: 'center' }}>
+            <Paragraph style={{ color: '#FF5A5F', marginBottom: 16 }}>Error loading properties</Paragraph>
+            <Button mode="outlined" onPress={refreshResorts}>
+              Try Again
             </Button>
-          </Surface>
+          </Card>
         </View>
       );
     }
 
     if (resorts.length === 0) {
       return (
-        <View className="px-6 mb-6">
-          <Surface className="p-6 rounded-xl" elevation={2}>
-            <View className="items-center">
-              <View className="bg-pink-100 p-4 rounded-full mb-4">
-                <Plus size={32} color="#EC4899" />
-              </View>
-              <Text className="text-lg font-bold text-gray-900 mb-2">No Resort Found</Text>
-              <Text className="text-sm text-gray-600 text-center mb-4">
-                You haven't created a resort yet. Create your first resort to get started.
-              </Text>
-              <Button 
-                mode="contained" 
-                buttonColor="#EC4899"
-                onPress={() => router.push('/CreateResort')}
-              >
-                Create Resort
-              </Button>
-            </View>
-          </Surface>
+        <View style={{ padding: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Subheading style={{ fontSize: 22, fontWeight: '700' }}>Your Properties</Subheading>
+          </View>
+          
+          <Card style={{ padding: 40, alignItems: 'center' }}>
+            <Surface style={{ backgroundColor: '#FFF0F0', borderRadius: 40, padding: 20, marginBottom: 24 }}>
+              <Plus size={32} color="#FF5A5F" />
+            </Surface>
+            <Title style={{ marginBottom: 8 }}>Start hosting on OneStay</Title>
+            <Paragraph style={{ textAlign: 'center', marginBottom: 24 }}>
+              Create your first property listing and start earning from your space
+            </Paragraph>
+            <Button 
+              mode="contained" 
+              buttonColor="#FF5A5F"
+              onPress={() => router.push('/CreateResort')}
+            >
+              Create Your First Property
+            </Button>
+          </Card>
         </View>
       );
     }
 
     return (
-      <View className="px-6 mb-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-bold text-gray-900">Your Resort Details</Text>
+      <View style={{ padding: 20 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Subheading style={{ fontSize: 22, fontWeight: '700' }}>Your Properties</Subheading>
           <TouchableOpacity onPress={refreshResorts}>
-            <Text className="text-pink-500 font-medium">Refresh</Text>
+            <Text style={{ color: '#FF5A5F', fontWeight: '600' }}>Refresh</Text>
           </TouchableOpacity>
         </View>
         
         {resorts.map((resort) => (
-          <Surface key={resort._id} className="mb-4 rounded-xl overflow-hidden" elevation={3}>
-            {resort.image && (
-              <Image 
-                source={{ uri: resort.image }} 
-                className="w-full h-48"
-                style={{ resizeMode: 'cover' }}
-              />
-            )}
-            <View className="p-6">
-              <View className="flex-row items-start justify-between mb-4">
-                <View className="flex-1">
-                  <Text className="text-xl font-bold text-gray-900 mb-2">
-                    {resort.resort_name}
-                  </Text>
-                  <View className="flex-row items-center mb-3">
-                    <MapPin size={16} color="#6B7280" />
-                    <Text className="text-sm text-gray-600 ml-2 flex-1">
-                      {resort.location.address}
-                    </Text>
-                  </View>
+          <Card key={resort._id} style={{ marginBottom: 24, borderRadius: 20 }}>
+            {resort.image ? (
+              <View style={{ position: 'relative' }}>
+                <Image 
+                  source={{ uri: resort.image }} 
+                  style={{ width: '100%', height: 240, borderTopLeftRadius: 20, borderTopRightRadius: 20 }}
+                />
+                <View style={{ position: 'absolute', top: 16, right: 16, flexDirection: 'row', gap: 8 }}>
+                  <IconButton 
+                    icon={() => <Heart size={16} />} 
+                    mode="contained-tonal" 
+                    size={16}
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
+                  />
+                  <IconButton 
+                    icon={() => <Share size={16} />} 
+                    mode="contained-tonal" 
+                    size={16}
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
+                  />
+                  <IconButton 
+                    icon={() => <MoreHorizontal size={16} />} 
+                    mode="contained-tonal" 
+                    size={16}
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
+                  />
                 </View>
-                <Chip 
-                  mode="outlined" 
-                  textStyle={{ fontSize: 10 }}
-                  style={{ backgroundColor: '#F0FDF4', borderColor: '#10B981' }}
-                >
-                  Active
+              </View>
+            ) : (
+              <Surface style={{ height: 240, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8F8F8' }}>
+                <Paragraph>No Image</Paragraph>
+              </Surface>
+            )}
+            
+            <Card.Content style={{ padding: 20 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <Title style={{ fontSize: 18, fontWeight: '700', flex: 1, marginRight: 12 }} numberOfLines={2}>
+                  {resort.resort_name}
+                </Title>
+                <Chip mode="outlined" icon={() => <Star size={12} color="#FFD700" />}>
+                  4.8
                 </Chip>
               </View>
               
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                <MapPin size={14} color="#666666" />
+                <Caption style={{ marginLeft: 6 }} numberOfLines={1}>
+                  {resort.location.address}
+                </Caption>
+              </View>
+              
               {resort.description && (
-                <View className="mb-4">
-                  <Text className="text-sm font-medium text-gray-900 mb-2">Description</Text>
-                  <Text className="text-sm text-gray-600 leading-5">
-                    {resort.description}
-                  </Text>
-                </View>
+                <Paragraph style={{ marginBottom: 16 }} numberOfLines={2}>
+                  {resort.description}
+                </Paragraph>
               )}
               
-              <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-900 mb-2">Location Coordinates</Text>
-                <View className="bg-gray-50 p-3 rounded-lg">
-                  <Text className="text-xs text-gray-600">
-                    Latitude: {resort.location.latitude.toFixed(6)}
-                  </Text>
-                  <Text className="text-xs text-gray-600">
-                    Longitude: {resort.location.longitude.toFixed(6)}
-                  </Text>
+              <Divider style={{ marginBottom: 16 }} />
+              
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Title style={{ fontSize: 18, fontWeight: '700' }}>28</Title>
+                  <Caption>Bookings</Caption>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <Title style={{ fontSize: 18, fontWeight: '700' }}>94%</Title>
+                  <Caption>Occupancy</Caption>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <Title style={{ fontSize: 18, fontWeight: '700' }}>₱2,500</Title>
+                  <Caption>Avg/night</Caption>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <Title style={{ fontSize: 18, fontWeight: '700', color: '#10B981' }}>Active</Title>
+                  <Caption>Status</Caption>
                 </View>
               </View>
               
-              <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-900 mb-2">Created</Text>
-                <Text className="text-sm text-gray-600">
-                  {new Date(resort.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Text>
-              </View>
-              
-              <View className="flex-row space-x-3">
+              <Card.Actions style={{ paddingHorizontal: 0 }}>
                 <Button 
                   mode="outlined" 
-                  icon={({ size }) => <Eye size={size} color="#6B7280" />}
-                  className="flex-1"
-                  labelStyle={{ fontSize: 12 }}
+                  style={{ flex: 1, marginRight: 8 }}
                 >
                   View Details
                 </Button>
                 <Button 
                   mode="contained" 
-                  icon={({ size }) => <Edit3 size={size} color="white" />}
-                  className="flex-1"
-                  buttonColor="#EC4899"
-                  labelStyle={{ fontSize: 12 }}
+                  style={{ flex: 1, marginLeft: 8 }}
+                  buttonColor="#FF5A5F"
                 >
-                  Edit Resort
+                  Manage
                 </Button>
-              </View>
-            </View>
-          </Surface>
+              </Card.Actions>
+            </Card.Content>
+          </Card>
         ))}
       </View>
     );
   };
 
-  // Properties Section
-  const PropertiesSection = () => (
-    <View className="mb-6">
-      <View className="flex-row justify-between items-center px-6 mb-4">
-        <Text className="text-lg font-bold text-gray-900">Your Properties</Text>
-        <TouchableOpacity className="flex-row items-center">
-          <Text className="text-pink-500 font-medium mr-1">View all</Text>
-          <ArrowUpRight size={16} color="#EC4899" />
-        </TouchableOpacity>
-      </View>
-      
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6">
-        {properties.map((property) => (
-          <Surface key={property.id} className="mr-4 rounded-2xl overflow-hidden" style={{ width: 280 }} elevation={3}>
-            <Image 
-              source={{ uri: property.image }} 
-              className="w-full h-48"
-              style={{ resizeMode: 'cover' }}
-            />
-            <View className="p-4">
-              <Text className="font-bold text-gray-900 mb-1" numberOfLines={1}>
-                {property.name}
-              </Text>
-              <View className="flex-row items-center mb-3">
-                <MapPin size={14} color="#6B7280" />
-                <Text className="text-sm text-gray-600 ml-1" numberOfLines={1}>
-                  {property.location}
-                </Text>
-              </View>
-              
-              <View className="flex-row justify-between items-center mb-4">
-                <View className="flex-1 mr-2">
-                  <Text className="text-xs text-gray-500">Price/Night</Text>
-                  <Text className="font-bold text-pink-600">{property.price}</Text>
-                </View>
-                <View className="flex-1 mr-2">
-                  <Text className="text-xs text-gray-500">Bookings</Text>
-                  <Text className="font-bold text-blue-600">{property.bookings}</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-xs text-gray-500">Rating</Text>
-                  <View className="flex-row items-center">
-                    <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                    <Text className="font-bold text-gray-900 ml-1">{property.rating}</Text>
-                  </View>
-                </View>
-              </View>
-              
-              <View className="flex-row space-x-2">
-                <Button 
-                  mode="outlined" 
-                  icon={({ size }) => <Eye size={size} color="#6B7280" />}
-                  compact
-                  className="flex-1"
-                  labelStyle={{ fontSize: 12 }}
-                >
-                  View
-                </Button>
-                <Button 
-                  mode="contained" 
-                  icon={({ size }) => <Edit3 size={size} color="white" />}
-                  compact
-                  className="flex-1"
-                  buttonColor="#EC4899"
-                  labelStyle={{ fontSize: 12 }}
-                >
-                  Edit
-                </Button>
-              </View>
-            </View>
-          </Surface>
-        ))}
-        
-        {/* Add Property Card */}
-        <TouchableOpacity 
-          className="mr-4 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 justify-center items-center"
-          style={{ width: 280, height: 320 }}
-          onPress={() => router.push('/CreateResort')}
-        >
-          <View className="bg-pink-100 p-4 rounded-full mb-4">
-            <Plus size={32} color="#EC4899" />
-          </View>
-          <Text className="text-lg font-bold text-gray-900 mb-2">Add Property</Text>
-          <Text className="text-sm text-gray-600 text-center px-4">
-            List a new property to expand your business
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
-  );
-
   return (
-    <View className="flex-1 bg-gray-50">
+    <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <DashboardHeader />
         <ResortDetailsSection />
-        <PropertiesSection />
-        <View className="mb-32" />
+        <View style={{ height: 120 }} />
       </ScrollView>
       
-      {/* Floating Action Button */}
       <FAB
-        icon={({ size }) => <Plus size={size} color="white" />}
+        icon={() => <Plus size={24} color="white" />}
         style={{
           position: 'absolute',
           margin: 16,
           right: 0,
-          bottom: 80,
-          backgroundColor: '#EC4899',
+          bottom: 100,
+          backgroundColor: '#FF5A5F',
         }}
         onPress={() => router.push('/CreateResort')}
       />

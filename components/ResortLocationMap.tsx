@@ -38,9 +38,11 @@ export default function ResortLocationMap({ resort }: ResortLocationMapProps) {
         initialRegion={{
           latitude: resort.location.latitude,
           longitude: resort.location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+          latitudeDelta: 0.002,
+          longitudeDelta: 0.002,
         }}
+        showsCompass={true}
+        showsScale={true}
       >
         <Marker
           coordinate={{

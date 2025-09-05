@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, Platform } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import { WebView } from 'react-native-webview';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 interface LocationCoords {
@@ -52,91 +52,12 @@ export default function MapLocationPicker({
   const centerLat = initialLocation?.latitude || currentLocation?.latitude || 8.4803;
   const centerLng = initialLocation?.longitude || currentLocation?.longitude || 124.6498;
 
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body { margin: 0; padding: 0; height: 100vh; }
-        #map { height: 100%; width: 100%; }
-      </style>
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        // Initialize the map
-        const map = L.map('map').setView([${centerLat}, ${centerLng}], 13);
-        
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        let selectedMarker = null;
-        let currentLocationMarker = null;
-        
-        // Add current location marker if available
-        ${currentLocation ? `
-        const currentIcon = L.divIcon({
-          html: '<div style="background: #4285F4; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-          iconSize: [16, 16],
-          iconAnchor: [8, 8]
-        });
-        currentLocationMarker = L.marker([${currentLocation.latitude}, ${currentLocation.longitude}], {icon: currentIcon})
-          .addTo(map)
-          .bindPopup('Your Location');
-        ` : ''}
-        
-        // Add initial marker if provided
-        ${initialLocation ? `
-        selectedMarker = L.marker([${initialLocation.latitude}, ${initialLocation.longitude}])
-          .addTo(map)
-          .bindPopup('Selected Resort Location');
-        ` : ''}
-        
-        // Handle map clicks
-        map.on('click', function(e) {
-          const lat = e.latlng.lat;
-          const lng = e.latlng.lng;
-          
-          // Remove existing selected marker
-          if (selectedMarker) {
-            map.removeLayer(selectedMarker);
-          }
-          
-          // Add new marker
-          selectedMarker = L.marker([lat, lng])
-            .addTo(map)
-            .bindPopup('Selected Resort Location')
-            .openPopup();
-          
-          // Send coordinates back to React Native
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'locationSelected',
-            latitude: lat,
-            longitude: lng
-          }));
-        });
-      </script>
-    </body>
-    </html>
-  `;
-
-  const handleWebViewMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'locationSelected') {
-        setSelectedLocation({
-          latitude: data.latitude,
-          longitude: data.longitude
-        });
-      }
-    } catch (error) {
-      console.log('Error parsing WebView message:', error);
-    }
+  const handleMapPress = (event: any) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    setSelectedLocation({
+      latitude,
+      longitude
+    });
   };
 
   const confirmLocation = () => {
@@ -155,13 +76,51 @@ export default function MapLocationPicker({
         </Text>
       </View>
       
-      <WebView
-        source={{ html: htmlContent }}
+      <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
-        onMessage={handleWebViewMessage}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-      />
+        initialRegion={{
+          latitude: centerLat,
+          longitude: centerLng,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+        onPress={handleMapPress}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        showsCompass={true}
+        showsScale={true}
+        showsBuildings={true}
+        showsPointsOfInterest={true}
+      >
+        {/* Current Location Marker - handled by showsUserLocation */}
+        
+        {/* Selected Location Marker */}
+        {selectedLocation && (
+          <Marker
+            coordinate={{
+              latitude: selectedLocation.latitude,
+              longitude: selectedLocation.longitude,
+            }}
+            title="Selected Resort Location"
+            description={`${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)}`}
+            pinColor="red"
+          />
+        )}
+        
+        {/* Initial Location Marker */}
+        {initialLocation && !selectedLocation && (
+          <Marker
+            coordinate={{
+              latitude: initialLocation.latitude,
+              longitude: initialLocation.longitude,
+            }}
+            title="Current Resort Location"
+            description="Tap anywhere to change location"
+            pinColor="blue"
+          />
+        )}
+      </MapView>
       
       <View style={styles.buttonContainer}>
         <Button 

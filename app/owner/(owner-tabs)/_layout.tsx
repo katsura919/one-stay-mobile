@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { BarChart3, Calendar, MessageCircle, Settings } from "lucide-react-native";
+import { BarChart3, Calendar, MessageCircle, Settings, TreePalm  } from "lucide-react-native";
 import { ResortProvider } from "@/contexts/ResortContext";
 
 export default function OwnerTabLayout() {
@@ -35,6 +35,16 @@ export default function OwnerTabLayout() {
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <BarChart3 color={color} size={size} />
+          ),
+          headerShown: false,
+        }}
+      />
+       <Tabs.Screen
+        name="ResortScreen"
+        options={{
+          title: "Resort",
+          tabBarIcon: ({ color, size }) => (
+            <TreePalm  color={color} size={size} />
           ),
           headerShown: false,
         }}

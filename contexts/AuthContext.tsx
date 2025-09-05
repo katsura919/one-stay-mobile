@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (userData.role === 'customer') {
           router.replace('/customer/(customer-tabs)/HomeScreen');
         } else if (userData.role === 'owner') {
-          router.replace('/(owner-tabs)/Dashboard');
+          router.replace('/owner/(owner-tabs)/Dashboard');
         }
       }
     } catch (error) {
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (userData.role === 'customer') {
         router.replace('/customer/(customer-tabs)/HomeScreen');
       } else if (userData.role === 'owner') {
-        router.replace('/(owner-tabs)/Dashboard');
+        router.replace('/owner/(owner-tabs)/Dashboard');
       }
     } catch (error) {
       console.error('Error during login:', error);
