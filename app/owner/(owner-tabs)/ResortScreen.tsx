@@ -282,6 +282,30 @@ export default function ResortScreen() {
                   location={resort.location}
                   resortName={resort.resort_name}
                 />
+                
+                {/* View Rooms Button */}
+                <Button 
+                  mode="contained" 
+                  buttonColor="#FF5A5F"
+                  style={{ 
+                    marginTop: 24,
+                    width: '100%',
+                    borderRadius: 12
+                  }}
+                  contentStyle={{
+                    paddingVertical: 8
+                  }}
+                  labelStyle={{
+                    fontSize: 16,
+                    fontWeight: '600'
+                  }}
+                  onPress={() => router.push({
+                    pathname: '/ViewRooms',
+                    params: { resortId: resort._id, resortName: resort.resort_name }
+                  })}
+                >
+                  View Rooms
+                </Button>
               </View>
             </View>
           ))}
