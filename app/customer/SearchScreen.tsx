@@ -156,7 +156,7 @@ export default function SearchScreen() {
                                 onPress={() => {
                                     // Navigate to resort details
                                     router.push({
-                                        pathname: '/ResortDetailsScreen',
+                                        pathname: '/customer/ResortDetailsScreen',
                                         params: { resortId: resort._id }
                                     });
                                 }}

@@ -20,27 +20,19 @@ import {
   Clock,
   XCircle
 } from 'lucide-react-native';
-import { authenticatedApiRequest } from '../utils/api';
-
-interface Room {
-  _id: string;
-  resort_id: string;
-  room_type: string;
-  capacity: number;
-  status: string;
-  createdAt: string;
-  deleted: boolean;
-}
+import { roomAPI, Room } from '@/services/roomService';
 
 export default function ViewRooms() {
-  const { resortId, resortName } = useLocalSearchParams<{
+  const { resortId, resortName, ownerView } = useLocalSearchParams<{
     resortId: string;
     resortName: string;
+    ownerView?: string;
   }>();
   
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resort, setResort] = useState<any>(null);
 
   useEffect(() => {
     if (resortId) {
@@ -53,73 +45,10 @@ export default function ViewRooms() {
       setLoading(true);
       setError(null);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await roomAPI.getRoomsByResort(resortId as string);
+      setRooms(response.rooms);
+      setResort(response.resort);
       
-      // Dummy data for rooms
-      const dummyRooms: Room[] = [
-        {
-          _id: '64f1a2b3c4d5e6f7890123a1',
-          resort_id: resortId || '',
-          room_type: 'Deluxe Ocean View Suite',
-          capacity: 4,
-          status: 'available',
-          createdAt: '2024-01-15T10:30:00Z',
-          deleted: false
-        },
-        {
-          _id: '64f1a2b3c4d5e6f7890123a2',
-          resort_id: resortId || '',
-          room_type: 'Standard Mountain View Room',
-          capacity: 2,
-          status: 'booked',
-          createdAt: '2024-01-20T14:45:00Z',
-          deleted: false
-        },
-        {
-          _id: '64f1a2b3c4d5e6f7890123a3',
-          resort_id: resortId || '',
-          room_type: 'Premium Family Suite',
-          capacity: 6,
-          status: 'available',
-          createdAt: '2024-02-01T09:15:00Z',
-          deleted: false
-        },
-        {
-          _id: '64f1a2b3c4d5e6f7890123a4',
-          resort_id: resortId || '',
-          room_type: 'Executive Business Room',
-          capacity: 2,
-          status: 'maintenance',
-          createdAt: '2024-02-10T16:20:00Z',
-          deleted: false
-        },
-        {
-          _id: '64f1a2b3c4d5e6f7890123a5',
-          resort_id: resortId || '',
-          room_type: 'Luxury Presidential Suite',
-          capacity: 8,
-          status: 'available',
-          createdAt: '2024-02-15T11:00:00Z',
-          deleted: false
-        }
-      ];
-      
-      setRooms(dummyRooms);
-      
-      // Uncomment below for API integration later:
-      /*
-      const response = await authenticatedApiRequest(`/api/rooms/resort/${resortId}`, {
-        method: 'GET'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setRooms(data.rooms || []);
-      } else {
-        throw new Error('Failed to fetch rooms');
-      }
-      */
     } catch (error) {
       console.error('Error fetching rooms:', error);
       setError('Failed to load rooms');
@@ -155,8 +84,10 @@ export default function ViewRooms() {
   };
 
   const handleCreateRoom = () => {
-    // Navigate to create room screen (to be implemented)
-    Alert.alert('Create Room', 'Create room functionality will be implemented');
+    router.push({
+      pathname: '/owner/CreateRoom',
+      params: { resortId }
+    });
   };
 
   if (loading) {
@@ -252,15 +183,19 @@ export default function ViewRooms() {
         />
         <View style={{ flex: 1, marginLeft: 8 }}>
           <Title style={{ fontSize: 20, fontWeight: '700', color: '#222222' }}>
-            Rooms
+            {resort?.resort_name || resortName || 'Resort'} - Rooms
           </Title>
-
+          <Text style={{ fontSize: 14, color: '#717171' }}>
+            {rooms.length} room{rooms.length !== 1 ? 's' : ''}
+          </Text>
         </View>
-        <IconButton 
-          icon={() => <Plus size={24} color="#FF5A5F" />}
-          onPress={handleCreateRoom}
-          style={{ margin: 0 }}
-        />
+        {ownerView === 'true' && (
+          <IconButton 
+            icon={() => <Plus size={24} color="#FF5A5F" />}
+            onPress={handleCreateRoom}
+            style={{ margin: 0 }}
+          />
+        )}
       </View>
 
       {rooms.length === 0 ? (
@@ -311,7 +246,7 @@ export default function ViewRooms() {
                         }}>
                           {room.room_type}
                         </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                           <Users size={16} color="#717171" />
                           <Text style={{ 
                             fontSize: 14, 
@@ -321,6 +256,17 @@ export default function ViewRooms() {
                             {room.capacity} guests
                           </Text>
                         </View>
+                        {room.price_per_night && (
+                          <View style={{ marginTop: 4 }}>
+                            <Text style={{ 
+                              fontSize: 16, 
+                              fontWeight: '600', 
+                              color: '#10B981'
+                            }}>
+                              ${room.price_per_night}/night
+                            </Text>
+                          </View>
+                        )}
                       </View>
                       
                       {/* Status Chip */}

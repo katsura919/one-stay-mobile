@@ -174,7 +174,7 @@ export default function ResortScreen() {
                   {resort.description || 'A beautiful and comfortable place to stay with all the amenities you need for a perfect vacation.'}
                 </Text>
                 
-                {/* Bottom Section - Rating, Guest Favorite, Reviews */}
+                {/* Bottom Section - Rating, Rooms, Reservations, Reviews */}
                 <View style={{ 
                   flexDirection: 'row', 
                   justifyContent: 'space-between', 
@@ -184,7 +184,7 @@ export default function ResortScreen() {
                   borderTopColor: '#F0F0F0'
                 }}>
                   {/* Rating */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 8 }}>
+                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
                     <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
                       5.0
                     </Text>
@@ -198,14 +198,27 @@ export default function ResortScreen() {
                   {/* Separator */}
                   <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
                   
+                  {/* Total Rooms */}
+                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
+                      0
+                    </Text>
+                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#717171', textAlign: 'center' }}>
+                      Rooms
+                    </Text>
+                  </View>
+                  
+                  {/* Separator */}
+                  <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
+                  
                   {/* Total Bookings */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 8 }}>
+                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
                     <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
                       12
                     </Text>
 
                     <Text style={{ fontSize: 13, fontWeight: '500', color: '#717171', textAlign: 'center' }}>
-                      Reservations
+                      Bookings
                     </Text>
                   </View>
                   
@@ -213,7 +226,7 @@ export default function ResortScreen() {
                   <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
                   
                   {/* Reviews */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 8 }}>
+                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
                     <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
                       8
                     </Text>
@@ -284,28 +297,35 @@ export default function ResortScreen() {
                 />
                 
                 {/* View Rooms Button */}
-                <Button 
-                  mode="contained" 
-                  buttonColor="#FF5A5F"
-                  style={{ 
-                    marginTop: 24,
-                    width: '100%',
-                    borderRadius: 12
-                  }}
-                  contentStyle={{
-                    paddingVertical: 8
-                  }}
-                  labelStyle={{
-                    fontSize: 16,
-                    fontWeight: '600'
-                  }}
-                  onPress={() => router.push({
-                    pathname: '/ViewRooms',
-                    params: { resortId: resort._id, resortName: resort.resort_name }
-                  })}
-                >
-                  View Rooms
-                </Button>
+                <View className="flex-row space-x-3 mt-6">
+                  <TouchableOpacity 
+                    onPress={() => router.push({
+                      pathname: '/ViewRooms',
+                      params: { 
+                        resortId: resort._id, 
+                        resortName: resort.resort_name,
+                        ownerView: 'true'
+                      }
+                    })}
+                    className="flex-1 bg-gray-100 py-3 rounded-lg"
+                  >
+                    <Text className="text-gray-900 font-semibold text-center">
+                      Manage Rooms
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    onPress={() => router.push({
+                      pathname: '/owner/CreateRoom',
+                      params: { resortId: resort._id }
+                    })}
+                    className="flex-1 bg-pink-600 py-3 rounded-lg"
+                  >
+                    <Text className="text-white font-semibold text-center">
+                      Add Room
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           ))}

@@ -8,7 +8,7 @@ const Header = () => {
   const { user } = useAuth();
 
   const handleSearchPress = () => {
-    router.push('/SearchScreen');
+    router.push('/customer/SearchScreen');
   };
 
   return (
