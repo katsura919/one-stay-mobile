@@ -100,6 +100,51 @@ export const resortAPI = {
     }
   },
 
+  updateResort: async (resortId: string, resortData: Partial<ResortFormData>, token: string): Promise<Resort> => {
+    try {
+      const formData = new FormData();
+      
+      if (resortData.resort_name) {
+        formData.append('resort_name', resortData.resort_name);
+      }
+      
+      if (resortData.location) {
+        formData.append('location', JSON.stringify(resortData.location));
+      }
+      
+      if (resortData.description !== undefined) {
+        formData.append('description', resortData.description);
+      }
+
+      if (resortData.imageUri) {
+        const imageFile = {
+          uri: resortData.imageUri,
+          type: 'image/jpeg',
+          name: `resort-${Date.now()}.jpg`,
+        } as any;
+        formData.append('image', imageFile);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/resort/${resortId}`, {
+        method: 'PUT',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to update resort');
+    }
+  },
+
   updateResortImage: async (resortId: string, imageUri: string, token: string): Promise<Resort> => {
     try {
       const formData = new FormData();
