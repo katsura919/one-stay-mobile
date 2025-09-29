@@ -143,7 +143,7 @@ export default function SearchScreen() {
         if (searchResults.length > 0) {
             return (
                 <View className="mb-6">
-                    <Text className="text-lg font-semibold font-inter text-gray-900 mb-4">
+                    <Text className="text-sm font-semibold font-inter text-gray-900 mb-4">
                         Search Results ({searchResults.length})
                     </Text>
                     

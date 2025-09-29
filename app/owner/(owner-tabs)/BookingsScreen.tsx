@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
-import { Card, Chip, FAB, Searchbar } from 'react-native-paper';
-import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye } from 'lucide-react-native';
+import { Card, Chip, FAB, Searchbar, Avatar } from 'react-native-paper';
+import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye, ChevronRight} from 'lucide-react-native';
 import { reservationAPI, Reservation } from '@/services/reservationService';
 import { useAuth } from '@/contexts/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 export default function BookingsScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [processingReservations, setProcessingReservations] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchReservations();
@@ -38,85 +40,11 @@ export default function BookingsScreen() {
     }
   };
 
-  const handleStatusUpdate = async (reservationId: string, newStatus: 'approved' | 'rejected') => {
-    try {
-      setProcessingReservations(prev => new Set(prev).add(reservationId));
-      
-      await reservationAPI.updateReservationStatus(reservationId, newStatus);
-      
-      // Update local state
-      setReservations(prev => 
-        prev.map(reservation => 
-          reservation._id === reservationId 
-            ? { ...reservation, status: newStatus }
-            : reservation
-        )
-      );
-
-      Alert.alert(
-        'Success',
-        `Reservation ${newStatus} successfully!`,
-        [{ text: 'OK' }]
-      );
-
-      // If we're filtering by status and the status changed, remove from current view
-      if (selectedFilter.toLowerCase() !== 'all' && selectedFilter.toLowerCase() !== newStatus) {
-        setReservations(prev => 
-          prev.filter(reservation => reservation._id !== reservationId)
-        );
-      }
-    } catch (error: any) {
-      console.error('Error updating reservation status:', error);
-      Alert.alert(
-        'Error', 
-        error.message || 'Failed to update reservation. Please try again.'
-      );
-    } finally {
-      setProcessingReservations(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(reservationId);
-        return newSet;
-      });
-    }
-  };
-
-  const handleApproveReservation = (reservation: Reservation) => {
-    Alert.alert(
-      'Approve Reservation',
-      `Are you sure you want to approve this reservation for ${reservation.user_id_populated?.username || 'the guest'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Approve',
-          onPress: () => handleStatusUpdate(reservation._id, 'approved'),
-          style: 'default'
-        }
-      ]
-    );
-  };
-
-  const handleRejectReservation = (reservation: Reservation) => {
-    Alert.alert(
-      'Reject Reservation',
-      `Are you sure you want to reject this reservation for ${reservation.user_id_populated?.username || 'the guest'}? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reject',
-          onPress: () => handleStatusUpdate(reservation._id, 'rejected'),
-          style: 'destructive'
-        }
-      ]
-    );
-  };
-
   const handleViewDetails = (reservation: Reservation) => {
-    const roomInfo = reservation.room_id_populated;
-    Alert.alert(
-      'Reservation Details',
-      `Guest: ${reservation.user_id_populated?.username || 'Unknown'}\nEmail: ${reservation.user_id_populated?.email || 'N/A'}\n\nRoom: ${roomInfo?.room_type || 'Unknown'}\nResort: ${roomInfo?.resort_id?.resort_name || 'Unknown'}\n\nDates: ${formatDate(reservation.start_date)} - ${formatDate(reservation.end_date)}\nTotal: $${reservation.total_price}\n\nStatus: ${reservation.status.toUpperCase()}\nSubmitted: ${formatDate(reservation.createdAt)}`,
-      [{ text: 'OK' }]
-    );
+    router.push({
+      pathname: '/owner/BookingDetailsScreen',
+      params: { reservation: JSON.stringify(reservation) }
+    });
   };
 
   const formatDate = (dateString: string): string => {
@@ -158,183 +86,217 @@ export default function BookingsScreen() {
 
   if (loading && !refreshing) {
     return (
-      <View className="flex-1 bg-gray-50 justify-center items-center">
-        <ActivityIndicator size="large" color="#EC4899" />
-        <Text className="text-gray-600 mt-4">Loading reservations...</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-gray-100">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#1F2937" />
+          <Text className="text-gray-600 mt-4 font-inter text-base">Loading reservations...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView 
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => fetchReservations(true)}
-            colors={['#EC4899']}
+            colors={['#1F2937']}
           />
         }
       >
         {/* Header */}
-        <View className="px-6 pt-12 pb-4">
-          <Text className="text-2xl font-bold text-gray-900 mb-4">Reservation Management</Text>
+        <View className="px-6 pt-12 pb-6 bg-white">
+          <Text className="text-3xl font-bold font-inter text-gray-900 mb-2">Reservations</Text>
+          <Text className="text-base text-gray-600 font-inter mb-6">
+            Manage your property bookings
+          </Text>
+
           
           {/* Search and Filters */}
           <Searchbar
             placeholder="Search by guest, room, or resort..."
             onChangeText={setSearchQuery}
             value={searchQuery}
-            className="mb-4"
+            className="mb-6"
+            style={{ 
+              fontFamily: 'Inter',
+              borderRadius: 16,
+              elevation: 0,
+              backgroundColor: '#F9FAFB'
+            }}
+            inputStyle={{ fontFamily: 'Inter' }}
           />
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-            {['All', 'Pending', 'Approved', 'Rejected'].map((filter) => (
-              <Chip
-                key={filter}
-                mode={selectedFilter === filter ? 'flat' : 'outlined'}
-                selected={selectedFilter === filter}
-                onPress={() => setSelectedFilter(filter)}
-                className="mr-2"
-                style={{
-                  backgroundColor: selectedFilter === filter ? '#EC4899' : 'transparent',
-                  borderColor: selectedFilter === filter ? '#EC4899' : '#D1D5DB'
-                }}
-                textStyle={{
-                  color: selectedFilter === filter ? 'white' : '#6B7280'
-                }}
-              >
-                {filter}
-              </Chip>
-            ))}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
+            {['All', 'Pending', 'Approved', 'Rejected'].map((filter, index) => {
+              const isSelected = selectedFilter === filter;
+              const colors = {
+                'All': '#6366F1',
+                'Pending': '#F59E0B', 
+                'Approved': '#10B981',
+                'Rejected': '#EF4444'
+              };
+              
+              return (
+                <Chip
+                  key={filter}
+                  mode="flat"
+                  selected={isSelected}
+                  onPress={() => setSelectedFilter(filter)}
+                  className={`mx-1 ${index === 0 ? 'ml-1' : ''}`}
+                  style={{
+                    backgroundColor: isSelected ? colors[filter as keyof typeof colors] : '#F3F4F6',
+                    borderRadius: 12,
+                  }}
+                  textStyle={{
+                    color: isSelected ? 'white' : '#6B7280',
+                    fontFamily: 'Inter',
+                    fontWeight: '600',
+                    fontSize: 13
+                  }}
+                >
+                  {filter}
+                </Chip>
+              );
+            })}
           </ScrollView>
         </View>
 
         {/* Reservations List */}
-        <View className="px-6">
+        <View className="px-6 pt-2">
           {filteredReservations.length === 0 ? (
-            <View className="flex-1 justify-center items-center py-20">
-              <Calendar color="#9CA3AF" size={48} />
-              <Text className="text-gray-500 text-lg mt-4">No reservations found</Text>
-              <Text className="text-gray-400 text-center mt-2">
+            <View className="flex-1 justify-center items-center py-32 px-8">
+              <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-6">
+                <Calendar color="#9CA3AF" size={40} />
+              </View>
+              <Text className="text-gray-900 text-xl font-bold font-inter mb-2 text-center">No reservations found</Text>
+              <Text className="text-gray-500 text-center font-inter leading-6">
                 {selectedFilter === 'Pending' 
-                  ? 'No pending reservations to review'
-                  : `No ${selectedFilter.toLowerCase()} reservations`
+                  ? 'No pending reservations to review at the moment'
+                  : `No ${selectedFilter.toLowerCase()} reservations found`
                 }
               </Text>
             </View>
           ) : (
             filteredReservations.map((reservation) => {
               const StatusIcon = getStatusIcon(reservation.status);
-              const isProcessing = processingReservations.has(reservation._id);
               const roomInfo = reservation.room_id_populated;
+              const userInfo = reservation.user_id_populated;
+              const resortInfo = roomInfo?.resort_id;
 
               return (
-                <Card key={reservation._id} className="mb-4">
-                  <Card.Content className="p-4">
-                    {/* Header with Status */}
-                    <View className="flex-row justify-between items-start mb-3">
-                      <View className="flex-1">
-                        <View className="flex-row items-center mb-2">
-                          <User size={16} color="#6B7280" />
-                          <Text className="ml-2 font-semibold text-gray-900">
-                            {reservation.user_id_populated?.username || 'Guest'}
-                          </Text>
+                <TouchableOpacity 
+                  key={reservation._id}
+                  onPress={() => handleViewDetails(reservation)}
+                  activeOpacity={0.7}
+                >
+                  <Card className="mb-4" style={{ 
+                    borderRadius: 20, 
+                    elevation: 2,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 3,
+                  }}>
+                    <Card.Content className="p-6">
+                      {/* Header with Guest Info and Status */}
+                      <View className="flex-row items-center justify-between mb-5">
+                        <View className="flex-row items-center flex-1">
+                          <Avatar.Text 
+                            size={48} 
+                            label={userInfo?.username?.[0]?.toUpperCase() || 'G'} 
+                            style={{ backgroundColor: getStatusColor(reservation.status) }}
+                            labelStyle={{ fontSize: 18, fontWeight: 'bold' }}
+                          />
+                          <View className="ml-4 flex-1">
+                            <Text className="font-bold font-inter text-gray-900 text-lg">
+                              {userInfo?.username || 'Guest'}
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-inter mt-1">
+                              {resortInfo?.resort_name || 'Resort'} • {roomInfo?.room_type || 'Room'}
+                            </Text>
+                          </View>
                         </View>
-                        <View className="flex-row items-center mb-2">
-                          <MapPin size={16} color="#6B7280" />
-                          <Text className="ml-2 text-sm text-gray-600">
-                            {roomInfo?.room_type || 'Room'}
-                          </Text>
-                        </View>
-                        <View className="flex-row items-center">
-                          <Calendar size={16} color="#6B7280" />
-                          <Text className="ml-2 text-sm text-gray-600">
-                            {formatDate(reservation.start_date)} - {formatDate(reservation.end_date)}
-                          </Text>
-                        </View>
-                      </View>
-                      <View className="items-end">
-                        <View className="flex-row items-center mb-2">
-                          <StatusIcon color={getStatusColor(reservation.status)} size={16} />
+                        
+                        <View className="items-end">
                           <Chip
                             mode="flat"
+                            compact
                             style={{
-                              backgroundColor: getStatusColor(reservation.status),
-                              marginLeft: 4
+                              backgroundColor: `${getStatusColor(reservation.status)}20`,
+                              borderWidth: 1,
+                              borderColor: getStatusColor(reservation.status),
                             }}
-                            textStyle={{ color: 'white', fontSize: 12 }}
+                            textStyle={{ 
+                              color: getStatusColor(reservation.status), 
+                              fontSize: 12, 
+                              fontFamily: 'Inter', 
+                              fontWeight: '600' 
+                            }}
                           >
-                            {reservation.status}
+                            {reservation.status.toUpperCase()}
                           </Chip>
                         </View>
-                        <Text className="font-bold text-lg text-gray-900">
-                          ${reservation.total_price}
-                        </Text>
                       </View>
-                    </View>
 
-                    {/* Action Buttons */}
-                    <View className="flex-row space-x-2 mt-4">
-                      {/* View Details */}
-                      <TouchableOpacity
-                        onPress={() => handleViewDetails(reservation)}
-                        className="flex-1 bg-gray-100 py-2 rounded-lg"
-                      >
-                        <View className="flex-row items-center justify-center">
-                          <Eye color="#6B7280" size={16} />
-                          <Text className="text-gray-700 font-medium ml-2">Details</Text>
+                      {/* Booking Details */}
+                      <View className="bg-gray-50 p-4 rounded-2xl mb-4">
+                        <View className="flex-row items-center justify-between mb-3">
+                          <View className="flex-row items-center">
+                            <Calendar size={16} color="#6B7280" />
+                            <Text className="ml-2 text-sm font-medium text-gray-700 font-inter">
+                              Check-in
+                            </Text>
+                          </View>
+                          <Text className="text-sm font-semibold text-gray-900 font-inter">
+                            {formatDate(reservation.start_date)}
+                          </Text>
                         </View>
-                      </TouchableOpacity>
+                        
+                        <View className="flex-row items-center justify-between mb-3">
+                          <View className="flex-row items-center">
+                            <Calendar size={16} color="#6B7280" />
+                            <Text className="ml-2 text-sm font-medium text-gray-700 font-inter">
+                              Check-out
+                            </Text>
+                          </View>
+                          <Text className="text-sm font-semibold text-gray-900 font-inter">
+                            {formatDate(reservation.end_date)}
+                          </Text>
+                        </View>
+                        
+                        <View className="border-t border-gray-200 pt-3 mt-3">
+                          <View className="flex-row items-center justify-between">
+                            <Text className="text-sm font-medium text-gray-700 font-inter">
+                              Total Amount
+                            </Text>
+                            <Text className="text-xl font-bold text-gray-900 font-inter">
+                              ${reservation.total_price}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
 
-                      {/* Status-specific Actions */}
-                      {reservation.status === 'pending' && (
-                        <>
-                          <TouchableOpacity
-                            onPress={() => handleRejectReservation(reservation)}
-                            disabled={isProcessing}
-                            className={`flex-1 py-2 rounded-lg ${
-                              isProcessing ? 'bg-gray-300' : 'bg-red-500'
-                            }`}
-                          >
-                            <View className="flex-row items-center justify-center">
-                              {isProcessing ? (
-                                <ActivityIndicator size="small" color="white" />
-                              ) : (
-                                <XCircle color="white" size={16} />
-                              )}
-                              <Text className="text-white font-medium ml-2">Reject</Text>
-                            </View>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            onPress={() => handleApproveReservation(reservation)}
-                            disabled={isProcessing}
-                            className={`flex-1 py-2 rounded-lg ${
-                              isProcessing ? 'bg-gray-300' : 'bg-green-500'
-                            }`}
-                          >
-                            <View className="flex-row items-center justify-center">
-                              {isProcessing ? (
-                                <ActivityIndicator size="small" color="white" />
-                              ) : (
-                                <CheckCircle color="white" size={16} />
-                              )}
-                              <Text className="text-white font-medium ml-2">Approve</Text>
-                            </View>
-                          </TouchableOpacity>
-                        </>
-                      )}
-                    </View>
-                  </Card.Content>
-                </Card>
+                      {/* View Details Button */}
+                      <View className="flex-row items-center justify-center py-3 bg-gray-900 rounded-2xl">
+                        <Eye color="white" size={18} />
+                        <Text className="text-white font-semibold font-inter ml-2 mr-2">
+                          View Details
+                        </Text>
+                        <ChevronRight color="white" size={16} />
+                      </View>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
               );
             })
           )}
         </View>
 
-        <View className="mb-24" />
+        <View className="mb-32" />
       </ScrollView>
 
       {/* Summary FAB */}
@@ -343,16 +305,25 @@ export default function BookingsScreen() {
         label={`${reservations.filter(r => r.status === 'pending').length} Pending`}
         style={{
           position: 'absolute',
-          margin: 16,
+          margin: 20,
           right: 0,
-          bottom: 80,
-          backgroundColor: '#EC4899',
+          bottom: 90,
+          backgroundColor: '#6366F1',
+          borderRadius: 16,
         }}
         onPress={() => {
-          // Could navigate to analytics or summary screen
-          Alert.alert('Summary', `Total Reservations: ${reservations.length}\nPending: ${reservations.filter(r => r.status === 'pending').length}\nApproved: ${reservations.filter(r => r.status === 'approved').length}\nRejected: ${reservations.filter(r => r.status === 'rejected').length}`);
+          const pendingCount = reservations.filter(r => r.status === 'pending').length;
+          const approvedCount = reservations.filter(r => r.status === 'approved').length;
+          const rejectedCount = reservations.filter(r => r.status === 'rejected').length;
+          
+          Alert.alert(
+            'Reservations Summary', 
+            `📊 Total Reservations: ${reservations.length}\n\n⏳ Pending: ${pendingCount}\n✅ Approved: ${approvedCount}\n❌ Rejected: ${rejectedCount}`,
+            [{ text: 'OK' }]
+          );
         }}
       />
-    </View>
+
+    </SafeAreaView>
   );
 }

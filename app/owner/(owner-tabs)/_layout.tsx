@@ -5,7 +5,7 @@ export default function OwnerTabLayout() {
   return (
       <Tabs
         screenOptions={{
-        tabBarActiveTintColor: "#EC4899", // Pink color for owner theme
+        tabBarActiveTintColor: "#1F2937", 
         tabBarInactiveTintColor: "#717171",
         tabBarStyle: {
           backgroundColor: "#ffffff",
@@ -27,16 +27,6 @@ export default function OwnerTabLayout() {
         },
       }}
     >
-      <Tabs.Screen
-        name="Dashboard"
-        options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color, size }) => (
-            <BarChart3 color={color} size={size} />
-          ),
-          headerShown: false,
-        }}
-      />
        <Tabs.Screen
         name="ResortScreen"
         options={{

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Image, TouchableOpacity, Alert, Modal } from 'react-native';
+import { ScrollView, View, Image, TouchableOpacity, Alert, Modal, StatusBar } from 'react-native';
 import { 
   Button, 
   IconButton, 
@@ -338,20 +338,14 @@ export default function ResortScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <ScrollView showsVerticalScrollIndicator={false}>        
           {/* Property Cards */}
           <View>
             {resorts.map((resort) => (
-              <View key={resort._id} style={{ marginBottom: 32 }}>
+              <View key={resort._id} className="mb-8">
                 {/* Edit Controls - Always visible */}
-                <View style={{ 
-                  position: 'absolute', 
-                  top: 12, 
-                  right: 12, 
-                  zIndex: 10,
-                  flexDirection: 'row',
-                  gap: 8
-                }}>
+                <View className="absolute top-3 right-3 z-10 flex-row gap-2">
                   {/* Quick Image Update */}
                   <TouchableOpacity 
                     onPress={async () => {
@@ -379,125 +373,64 @@ export default function ResortScreen() {
                         setLoading(false);
                       }
                     }}
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: 16,
-                      padding: 8
-                    }}
+                    className="bg-white/90 rounded-2xl p-2"
                   >
-                    <Camera size={16} color="#FF5A5F" />
+                    <Camera size={16} color="#1F2937" />
                   </TouchableOpacity>
                   
                   {/* Full Edit */}
                   <TouchableOpacity 
                     onPress={() => openEditModal(resort)}
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: 16,
-                      padding: 8
-                    }}
+                    className="bg-white/90 rounded-2xl p-2"
                   >
-                    <Edit2 size={16} color="#FF5A5F" />
+                    <Edit2 size={16} color="#1F2937" />
                   </TouchableOpacity>
                 </View>
               
                 {/* Image Container - Cover Photo Style - Full Width */}
-                <View style={{ position: 'relative' }}>
+                <View className="relative">
                   {resort.image ? (
                     <Image 
                       source={{ uri: resort.image }} 
-                      style={{ 
-                        width: '100%', 
-                        height: 240, 
-                        backgroundColor: '#F7F7F7'
-                      }}
+                      className="w-full h-60 bg-gray-100"
                       resizeMode="cover"
                     />
                   ) : (
-                    <View style={{ 
-                      width: '100%', 
-                      height: 240, 
-                      backgroundColor: '#F7F7F7',
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{ color: '#717171', fontSize: 16 }}>No Image</Text>
+                    <View className="w-full h-60 bg-gray-100 justify-center items-center">
+                      <Text className="text-base text-gray-500 font-inter">No Image</Text>
                     </View>
                   )}
-                </View>              {/* Content Container with Rounded Top Corners */}
-              <View style={{ 
-                backgroundColor: '#FFFFFF',
-                marginTop: -20,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                paddingHorizontal: 24,
-                paddingTop: 24,
-                paddingBottom: 20,
-                marginHorizontal: 0
-              }}>
+                </View>
+                
+                {/* Content Container with Rounded Top Corners */}
+                <View className="bg-white -mt-5 rounded-t-2xl px-6 pt-6 pb-5 mx-0">
                 {/* Title with Edit Button */}
-                <View style={{ 
-                  flexDirection: 'row', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  marginBottom: 8 
-                }}>
-                  <Text style={{ 
-                    fontSize: 20, 
-                    fontWeight: '700', 
-                    color: '#222222',
-                    textAlign: 'left',
-                    lineHeight: 26,
-                    flex: 1
-                  }}>
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-xl font-bold font-inter text-gray-900 text-left leading-7 flex-1">
                     {resort.resort_name}
                   </Text>
                 </View>
                 
                 {/* Subtitle */}
-                <Text style={{ 
-                  fontSize: 16, 
-                  color: '#717171', 
-                  textAlign: 'left',
-                  marginBottom: 12,
-                  lineHeight: 22 
-                }}>
+                <Text className="text-base font-inter text-gray-500 text-left mb-3 leading-6">
                  {resort.location.address?.split(',')[0] || 'Location'}
                 </Text>
                 
                 {/* Description with Edit Button */}
-                <View style={{ 
-                  flexDirection: 'row', 
-                  alignItems: 'flex-start',
-                  marginBottom: 20 
-                }}>
-                  <Text style={{ 
-                    fontSize: 15, 
-                    color: '#555555', 
-                    textAlign: 'left',
-                    lineHeight: 21,
-                    paddingHorizontal: 0,
-                    flex: 1
-                  }} numberOfLines={3}>
+                <View className="flex-row items-start mb-5">
+                  <Text className="text-sm font-inter text-gray-700 text-left leading-5 px-0 flex-1" numberOfLines={3}>
                     {resort.description || 'A beautiful and comfortable place to stay with all the amenities you need for a perfect vacation.'}
                   </Text>
                 </View>
                 
                 {/* Bottom Section - Rating, Rooms, Reservations, Reviews */}
-                <View style={{ 
-                  flexDirection: 'row', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  paddingTop: 16,
-                  borderTopWidth: 1,
-                  borderTopColor: '#F0F0F0'
-                }}>
+                <View className="flex-row justify-between items-center pt-4 border-t border-gray-200">
                   {/* Rating */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
+                  <View className="items-center flex-1 px-1.5">
+                    <Text className="text-lg font-bold font-inter text-gray-900 mb-1">
                       5.0
                     </Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    <View className="flex-row justify-center">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star key={star} size={12} color="#FFD700" fill="#FFD700" style={{ marginHorizontal: 1 }} />
                       ))}
@@ -505,14 +438,14 @@ export default function ResortScreen() {
                   </View>
                   
                   {/* Separator */}
-                  <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
+                  <View className="w-px h-9 bg-gray-300" />
                   
                   {/* Total Rooms */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
+                  <View className="items-center flex-1 px-1.5">
+                    <Text className="text-lg font-bold font-inter text-gray-900 mb-1">
                       0
                     </Text>
-                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#717171', textAlign: 'center' }}>
+                    <Text className="text-xs font-medium font-inter text-gray-500 text-center">
                       Rooms
                     </Text>
                   </View>
@@ -521,106 +454,86 @@ export default function ResortScreen() {
                   <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
                   
                   {/* Total Bookings */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
+                  <View className="items-center flex-1 px-1.5">
+                    <Text className="text-lg font-bold font-inter text-gray-900 mb-1">
                       12
                     </Text>
 
-                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#717171', textAlign: 'center' }}>
+                    <Text className="text-xs font-medium font-inter text-gray-500 text-center">
                       Bookings
                     </Text>
                   </View>
                   
                   {/* Separator */}
-                  <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
+                  <View className="w-px h-9 bg-gray-300" />
                   
                   {/* Reviews */}
-                  <View style={{ alignItems: 'center', flex: 1, paddingHorizontal: 6 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#222222', marginBottom: 4 }}>
+                  <View className="items-center flex-1 px-1.5">
+                    <Text className="text-lg font-bold font-inter text-gray-900 mb-1">
                       8
                     </Text>
-                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#717171', textAlign: 'center' }}>
+                    <Text className="text-xs font-medium font-inter text-gray-500 text-center">
                       Reviews
                     </Text>
                   </View>
                 </View>
                 
                 {/* Amenities Section */}
-                <View style={{ marginTop: 20 }}>
-                  <View style={{ 
-                    flexDirection: 'row', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    marginBottom: 16 
-                  }}>
-                    <Text style={{ 
-                      fontSize: 18, 
-                      fontWeight: '700', 
-                      color: '#222222',
-                      textAlign: 'left'
-                    }}>
+                <View className="mt-5">
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-lg font-bold font-inter text-gray-900 text-left">
                       What this place offers
                     </Text>
-                    <TouchableOpacity
+                    <Button
+                      mode="contained"
                       onPress={() => openAmenityModal(resort)}
-                      style={{
-                        backgroundColor: '#FF5A5F',
-                        borderRadius: 16,
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        flexDirection: 'row',
-                        alignItems: 'center'
-                      }}
+                      buttonColor="#1F2937"
+                      textColor="white"
+                      icon={() => <Plus size={14} color="#FFFFFF" />}
+                      compact
+                      style={{ borderRadius: 16, paddingHorizontal: 12, }}
                     >
-                      <Plus size={14} color="#FFFFFF" />
-                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginLeft: 4 }}>
-                        Manage
-                      </Text>
-                    </TouchableOpacity>
+                      Add
+                    </Button>
                   </View>
                   
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                  <View className="flex-row flex-wrap gap-3">
                     {resortAmenities[resort._id]?.length > 0 ? (
                       resortAmenities[resort._id].map((amenity) => (
-                        <View key={amenity._id} style={{ 
-                          flexDirection: 'row', 
-                          alignItems: 'center',
-                          backgroundColor: '#F8F9FA',
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          borderRadius: 20,
-                          borderWidth: 1,
-                          borderColor: '#E5E5E5'
-                        }}>
+                        <View key={amenity._id} className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full border border-gray-200">
                           <Star size={16} color="#4F46E5" />
-                          <Text style={{ fontSize: 14, color: '#222222', marginLeft: 8, fontWeight: '500' }}>
+                          <Text className="text-sm text-gray-900 ml-2 font-medium font-inter">
                             {amenity.name}
                           </Text>
                         </View>
                       ))
                     ) : (
-                      <TouchableOpacity
-                        onPress={() => openAmenityModal(resort)}
-                        style={{
-                          borderWidth: 2,
-                          borderColor: '#E0E0E0',
-                          borderStyle: 'dashed',
-                          borderRadius: 12,
+                      <View 
+                        style={{ 
+                          borderColor: '#E0E0E0', 
+                          borderStyle: 'dashed', 
+                          borderWidth: 2, 
+                          borderRadius: 12, 
+                          paddingVertical: 16, 
                           paddingHorizontal: 20,
-                          paddingVertical: 16,
                           alignItems: 'center',
                           backgroundColor: '#F8F9FA',
-                          width: '100%'
+                          width: '100%' 
                         }}
                       >
-                        <Plus size={20} color="#717171" />
-                        <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: '#222222' }}>
+                        <Button
+                          mode="text"
+                          onPress={() => openAmenityModal(resort)}
+                          icon={() => <Plus size={20} color="#717171" />}
+                          textColor="#222222"
+                          style={{ marginTop: 0 }}
+                        >
                           Add Amenities
-                        </Text>
-                        <Text style={{ fontSize: 12, color: '#717171', textAlign: 'center', marginTop: 4 }}>
+                        </Button>
+                        <Text className="text-xs font-inter text-gray-500 text-center mt-1">
                           Tell guests what your resort offers
                         </Text>
-                      </TouchableOpacity>
+                      </View>
                     )}
                   </View>
                 </View>
@@ -632,8 +545,9 @@ export default function ResortScreen() {
                 />
                 
                 {/* View Rooms Button */}
-                <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
-                  <TouchableOpacity 
+                <View className="flex-row gap-3 mt-6">
+                  <Button 
+                    mode="outlined"
                     onPress={() => router.push({
                       pathname: '/ViewRooms',
                       params: { 
@@ -642,43 +556,32 @@ export default function ResortScreen() {
                         ownerView: 'true'
                       }
                     })}
-                    style={{ 
-                      flex: 1, 
-                      backgroundColor: '#F3F4F6', 
-                      paddingVertical: 12, 
-                      borderRadius: 8,
-                      alignItems: 'center'
-                    }}
+                    buttonColor="#F3F4F6"
+                    textColor="#111827"
+                    style={{ flex: 1, borderRadius: 8 }}
                   >
-                    <Text style={{ color: '#111827', fontWeight: '600', textAlign: 'center' }}>
-                      Manage Rooms
-                    </Text>
-                  </TouchableOpacity>
+                    Manage Rooms
+                  </Button>
                   
-                  <TouchableOpacity 
+                  <Button 
+                    mode="contained"
                     onPress={() => router.push({
                       pathname: '/owner/CreateRoom',
                       params: { resortId: resort._id }
                     })}
-                    style={{ 
-                      flex: 1, 
-                      backgroundColor: '#EC4899', 
-                      paddingVertical: 12, 
-                      borderRadius: 8,
-                      alignItems: 'center'
-                    }}
+                    buttonColor="#1F2937"
+                    textColor="white"
+                    style={{ flex: 1,  borderRadius: 8 }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontWeight: '600', textAlign: 'center' }}>
-                      Add Room
-                    </Text>
-                  </TouchableOpacity>
+                    Add Room
+                  </Button>
                 </View>
               </View>
             </View>
           ))}
         </View>
         
-        <View style={{ height: 100 }} />
+        <View className="h-25" />
       </ScrollView>
 
       {/* Edit Resort Modal */}
@@ -688,27 +591,21 @@ export default function ResortScreen() {
         presentationStyle="pageSheet"
         onRequestClose={closeEditModal}
       >
-        <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        <View className="flex-1 bg-white">
           {/* Modal Header */}
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            paddingHorizontal: 20, 
-            paddingVertical: 16, 
-            borderBottomWidth: 1, 
-            borderBottomColor: '#F0F0F0' 
-          }}>
+          <View className="flex-row items-center px-5 py-4 border-b border-gray-200">
             <TouchableOpacity onPress={closeEditModal} style={{ marginRight: 16 }}>
               <X size={24} color="#222222" />
             </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#222222', flex: 1 }}>
+            <Text className="text-lg font-semibold font-inter text-gray-900 flex-1">
               Edit Resort
             </Text>
             <Button 
               mode="contained" 
               onPress={saveResortChanges} 
               loading={loading}
-              buttonColor="#FF5A5F"
+              buttonColor="#1F2937"
+              textColor="white"
             >
               Save
             </Button>
@@ -716,8 +613,8 @@ export default function ResortScreen() {
 
           <ScrollView style={{ flex: 1, padding: 20 }}>
             {/* Resort Name */}
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#222222' }}>
+            <View className="mb-5">
+              <Text className="text-base font-semibold font-inter mb-2 text-gray-900">
                 Resort Name *
               </Text>
               <TextInput
@@ -730,8 +627,8 @@ export default function ResortScreen() {
             </View>
 
             {/* Address */}
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#222222' }}>
+            <View className="mb-5">
+              <Text className="text-base font-semibold font-inter mb-2 text-gray-900">
                 Address *
               </Text>
               <TextInput
@@ -747,38 +644,37 @@ export default function ResortScreen() {
 
             {/* Location */}
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#222222' }}>
+              <Text className="text-base font-semibold font-inter mb-2 text-gray-900">
                 Location
               </Text>
-              <TouchableOpacity
+              <Button
+                mode="outlined"
                 onPress={() => setMapPickerVisible(true)}
+                icon={() => <MapPin size={20} color="#FF5A5F" />}
+                textColor="#222222"
                 style={{
                   borderWidth: 1,
                   borderColor: '#E0E0E0',
                   borderRadius: 8,
                   padding: 16,
-                  backgroundColor: '#F8F9FA'
+                  backgroundColor: '#F8F9FA',
+                  justifyContent: 'flex-start'
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <MapPin size={20} color="#FF5A5F" />
-                  <Text style={{ marginLeft: 12, fontSize: 16, color: '#222222' }}>
-                    Update Location on Map
+                Update Location on Map
+              </Button>
+              {editFormData.latitude !== 0 && editFormData.longitude !== 0 && (
+                <View style={{ marginTop: 8, paddingLeft: 32 }}>
+                  <Text className="text-sm font-inter text-gray-500">
+                    Lat: {editFormData.latitude.toFixed(6)}, Lng: {editFormData.longitude.toFixed(6)}
                   </Text>
                 </View>
-                {editFormData.latitude !== 0 && editFormData.longitude !== 0 && (
-                  <View style={{ marginTop: 8, paddingLeft: 32 }}>
-                    <Text style={{ fontSize: 14, color: '#717171' }}>
-                      Lat: {editFormData.latitude.toFixed(6)}, Lng: {editFormData.longitude.toFixed(6)}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+              )}
             </View>
 
             {/* Description */}
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#222222' }}>
+              <Text className="text-base font-semibold font-inter mb-2 text-gray-900">
                 Description
               </Text>
               <TextInput
@@ -794,7 +690,7 @@ export default function ResortScreen() {
 
             {/* Image */}
             <View style={{ marginBottom: 40 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#222222' }}>
+              <Text className="text-base font-semibold font-inter mb-2 text-gray-900">
                 Resort Image
               </Text>
               
@@ -825,8 +721,7 @@ export default function ResortScreen() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity
-                  onPress={pickImage}
+                <View 
                   style={{
                     borderWidth: 2,
                     borderColor: '#E0E0E0',
@@ -838,13 +733,18 @@ export default function ResortScreen() {
                   }}
                 >
                   <Camera size={32} color="#717171" />
-                  <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '600', color: '#222222' }}>
+                  <Button
+                    mode="text"
+                    onPress={pickImage}
+                    textColor="#222222"
+                    style={{ marginTop: 12 }}
+                  >
                     Choose New Image
-                  </Text>
-                  <Text style={{ fontSize: 14, color: '#717171', textAlign: 'center', marginTop: 4 }}>
+                  </Button>
+                  <Text className="text-sm font-inter text-gray-500 text-center mt-1">
                     Tap to select from gallery
                   </Text>
-                </TouchableOpacity>
+                </View>
               )}
             </View>
           </ScrollView>
@@ -887,7 +787,7 @@ export default function ResortScreen() {
             <TouchableOpacity onPress={closeAmenityModal} style={{ marginRight: 16 }}>
               <X size={24} color="#222222" />
             </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#222222', flex: 1 }}>
+            <Text className="text-lg font-semibold font-inter text-gray-900 flex-1">
               Manage Amenities
             </Text>
           </View>
@@ -895,7 +795,7 @@ export default function ResortScreen() {
           <ScrollView style={{ flex: 1, padding: 20 }}>
             {/* Add New Amenity */}
             <View style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12, color: '#222222' }}>
+              <Text className="text-base font-semibold font-inter mb-3 text-gray-900">
                 Add New Amenity
               </Text>
               <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -910,7 +810,8 @@ export default function ResortScreen() {
                   mode="contained" 
                   onPress={addAmenity} 
                   loading={loading}
-                  buttonColor="#FF5A5F"
+                  buttonColor="#1F2937"
+                  textColor="white"
                   style={{ alignSelf: 'center' }}
                 >
                   Add
@@ -920,7 +821,7 @@ export default function ResortScreen() {
 
             {/* Current Amenities */}
             <View>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12, color: '#222222' }}>
+              <Text className="text-base font-semibold font-inter mb-3 text-gray-900">
                 Current Amenities
               </Text>
               
@@ -938,7 +839,7 @@ export default function ResortScreen() {
                       borderColor: '#E5E5E5'
                     }}>
                       <Star size={16} color="#4F46E5" />
-                      <Text style={{ fontSize: 14, color: '#222222', marginLeft: 12, fontWeight: '500', flex: 1 }}>
+                      <Text className="text-sm text-gray-900 ml-3 font-medium font-inter flex-1">
                         {amenity.name}
                       </Text>
                       <TouchableOpacity
@@ -965,10 +866,10 @@ export default function ResortScreen() {
                   backgroundColor: '#F8F9FA'
                 }}>
                   <Star size={32} color="#717171" />
-                  <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '600', color: '#222222' }}>
+                  <Text className="mt-3 text-base font-semibold font-inter text-gray-900">
                     No Amenities Yet
                   </Text>
-                  <Text style={{ fontSize: 14, color: '#717171', textAlign: 'center', marginTop: 4 }}>
+                  <Text className="text-sm font-inter text-gray-500 text-center mt-1">
                     Add amenities to tell guests what your resort offers
                   </Text>
                 </View>
