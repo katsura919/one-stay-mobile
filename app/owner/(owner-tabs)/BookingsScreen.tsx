@@ -307,32 +307,6 @@ export default function BookingsScreen() {
         <View className="mb-32" />
       </ScrollView>
 
-      {/* Summary FAB */}
-      <FAB
-        icon="chart-line"
-        label={`${reservations.filter(r => r.status === 'pending').length} Pending`}
-        style={{
-          position: 'absolute',
-          margin: 20,
-          right: 0,
-          bottom: 90,
-          backgroundColor: '#6366F1',
-          borderRadius: 16,
-        }}
-        onPress={() => {
-          const pendingCount = reservations.filter(r => r.status === 'pending').length;
-          const approvedCount = reservations.filter(r => r.status === 'approved').length;
-          const completedCount = reservations.filter(r => r.status === 'completed').length;
-          const rejectedCount = reservations.filter(r => r.status === 'rejected').length;
-          const cancelledCount = reservations.filter(r => r.status === 'cancelled').length;
-          
-          Alert.alert(
-            'Reservations Summary', 
-            `📊 Total: ${reservations.length}\n\n⏳ Pending: ${pendingCount}\n✅ Approved: ${approvedCount}\n🌟 Completed: ${completedCount}\n❌ Rejected: ${rejectedCount}\n🚫 Cancelled: ${cancelledCount}`,
-            [{ text: 'OK' }]
-          );
-        }}
-      />
 
     </SafeAreaView>
   );

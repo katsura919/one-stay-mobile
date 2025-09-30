@@ -20,7 +20,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    NavigationBar.setVisibilityAsync("hidden");
+    // Hide the navigation bar completely
+    NavigationBar.setVisibilityAsync('hidden');
   }, []);
 
   useEffect(() => {

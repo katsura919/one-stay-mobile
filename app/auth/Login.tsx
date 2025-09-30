@@ -67,69 +67,141 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   return (
     <>
       <StatusBar style="dark" />
-      <View className="flex-1 w-full h-full justify-center items-center bg-white px-6">
-        <View className="w-full max-w-md bg-white rounded-3xl py-8 px-6 items-center">
-          <Image 
-            source={require('../../assets/images/splash-icon.png')} 
-            className="w-24 h-24 mb-6 rounded-2xl" 
-            style={{ resizeMode: 'contain' }} 
-          />
-          <Text variant="headlineMedium" className="text-pink-500 font-extrabold mb-2 text-3xl tracking-tight">
-            Welcome to OneStay
-          </Text>
-          <Text className="text-gray-500 mb-8 text-center text-base">
-            Your summer resort room reservation app
-          </Text>
+      <View className="flex-1 bg-white">
+        {/* Main Content Container - Centered */}
+        <View className="flex-1 justify-center items-center px-8">
+          <View className="w-full max-w-sm">
+            {/* Logo and Header Section - Centered */}
+            <View className="items-center mb-12">
+              <View className="items-center mb-8">
+                <Image 
+                  source={require('../../assets/images/splash-icon.png')} 
+                  className="w-20 h-20 rounded-2xl" 
+                  style={{ resizeMode: 'contain' }} 
+                />
+              </View>
+              
+              <Text 
+                className="text-pink-500 text-4xl font-inter font-extrabold mb-3 text-center leading-tight"
+                style={{ letterSpacing: -0.5 }}
+              >
+                Welcome to OneStay
+              </Text>
+              <Text className="text-gray-500 text-lg font-inter font-medium text-center leading-relaxed">
+                Your summer resort room reservation app
+              </Text>
+            </View>
 
-          <View className="w-full space-y-4 mb-4">
-            <TextInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              mode="outlined"
-              left={<TextInput.Icon icon="email" />}
-              style={{ backgroundColor: '#F7F7F7', borderRadius: 24 }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              mode="outlined"
-              left={<TextInput.Icon icon="lock" />}
-              style={{ backgroundColor: '#F7F7F7', borderRadius: 24 }}
-              secureTextEntry
-            />
+            {/* Form Section - Centered */}
+            <View className="w-full">
+              <View className="space-y-6 mb-8">
+                <View className="w-full">
+                  <TextInput
+                    label="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    mode="outlined"
+                    left={<TextInput.Icon icon="email" />}
+                    style={{ 
+                      backgroundColor: '#F7F7F7', 
+                      borderRadius: 16,
+                      height: 56,
+                      width: '100%'
+                    }}
+                    contentStyle={{
+                      fontFamily: 'Inter',
+                      fontSize: 16
+                    }}
+                    outlineStyle={{
+                      borderRadius: 16,
+                      borderWidth: 1.5
+                    }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                
+                <View className="w-full">
+                  <TextInput
+                    label="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    mode="outlined"
+                    left={<TextInput.Icon icon="lock" />}
+                    style={{ 
+                      backgroundColor: '#F7F7F7', 
+                      borderRadius: 16,
+                      height: 56,
+                      width: '100%'
+                    }}
+                    contentStyle={{
+                      fontFamily: 'Inter',
+                      fontSize: 16
+                    }}
+                    outlineStyle={{
+                      borderRadius: 16,
+                      borderWidth: 1.5
+                    }}
+                    secureTextEntry
+                  />
+                </View>
+              </View>
+              
+              {/* Login Button - Centered */}
+              <View className="w-full items-center mb-6">
+                <Button
+                  mode="contained"
+                  onPress={handleLogin}
+                  loading={loading}
+                  disabled={loading}
+                  style={{ 
+                    borderRadius: 16, 
+                    paddingVertical: 4,
+                    height: 56,
+                    width: '100%',
+                    elevation: 3,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8
+                  }}
+                  buttonColor="#1F2937"
+                  labelStyle={{ 
+                    fontFamily: 'Inter',
+                    fontWeight: '700', 
+                    fontSize: 17,
+                    letterSpacing: 0.3
+                  }}
+                  contentStyle={{
+                    height: 56,
+                    justifyContent: 'center'
+                  }}
+                >
+                  {loading ? 'Signing In...' : 'Login'}
+                </Button>
+              </View>
+              
+              {/* Register Link - Centered */}
+              <View className="items-center w-full">
+                <Button 
+                  mode="text" 
+                  onPress={() => router.push('/auth/Register')}
+                  labelStyle={{ 
+                    color: '#1F2937', 
+                    fontFamily: 'Inter',
+                    fontWeight: '600',
+                    fontSize: 13,
+                    letterSpacing: 0.2
+                  }}
+                  style={{ 
+                    paddingVertical: 4
+                  }}
+                >
+                  Don't have an account? Register
+                </Button>
+              </View>
+            </View>
           </View>
-          
-          <Button
-            mode="contained"
-            onPress={handleLogin}
-            loading={loading}
-            style={{ 
-              width: '100%', 
-              borderRadius: 16, 
-              paddingVertical: 8, 
-              marginBottom: 8, 
-              elevation: 2 
-            }}
-            buttonColor="#1F2937"
-            labelStyle={{ fontWeight: 'bold', fontSize: 16 }}
-          >
-            {loading ? 'Signing In...' : 'Login'}
-          </Button>
-          
-          <Button 
-            mode="text" 
-            onPress={() => router.push('/auth/Register')} 
-            style={{ marginBottom: 8 }} 
-            labelStyle={{ color: '#1F2937', fontWeight: '600' }}
-          >
-            Don't have an account? Register
-          </Button>
-          
-          <IconButton icon="beach" size={32} iconColor="#FFB400" className="mt-4" />
         </View>
       </View>
     </>
