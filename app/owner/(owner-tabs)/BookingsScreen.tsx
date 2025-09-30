@@ -62,6 +62,7 @@ export default function BookingsScreen() {
       case 'pending': return '#F59E0B';
       case 'rejected': return '#EF4444';
       case 'cancelled': return '#6B7280';
+      case 'completed': return '#8B5CF6';
       default: return '#6B7280';
     }
   };
@@ -71,6 +72,7 @@ export default function BookingsScreen() {
       case 'approved': return CheckCircle;
       case 'rejected': return XCircle;
       case 'cancelled': return XCircle;
+      case 'completed': return CheckCircle;
       default: return Clock;
     }
   };
@@ -131,13 +133,15 @@ export default function BookingsScreen() {
           />
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
-            {['All', 'Pending', 'Approved', 'Rejected'].map((filter, index) => {
+            {['All', 'Pending', 'Approved', 'Completed', 'Rejected', 'Cancelled'].map((filter, index) => {
               const isSelected = selectedFilter === filter;
               const colors = {
                 'All': '#6366F1',
                 'Pending': '#F59E0B', 
                 'Approved': '#10B981',
-                'Rejected': '#EF4444'
+                'Completed': '#8B5CF6',
+                'Rejected': '#EF4444',
+                'Cancelled': '#6B7280'
               };
               
               return (
@@ -176,6 +180,10 @@ export default function BookingsScreen() {
               <Text className="text-gray-500 text-center font-inter leading-6">
                 {selectedFilter === 'Pending' 
                   ? 'No pending reservations to review at the moment'
+                  : selectedFilter === 'Completed'
+                  ? 'No completed reservations found'
+                  : selectedFilter === 'Cancelled'
+                  ? 'No cancelled reservations found'
                   : `No ${selectedFilter.toLowerCase()} reservations found`
                 }
               </Text>
@@ -314,11 +322,13 @@ export default function BookingsScreen() {
         onPress={() => {
           const pendingCount = reservations.filter(r => r.status === 'pending').length;
           const approvedCount = reservations.filter(r => r.status === 'approved').length;
+          const completedCount = reservations.filter(r => r.status === 'completed').length;
           const rejectedCount = reservations.filter(r => r.status === 'rejected').length;
+          const cancelledCount = reservations.filter(r => r.status === 'cancelled').length;
           
           Alert.alert(
             'Reservations Summary', 
-            `📊 Total Reservations: ${reservations.length}\n\n⏳ Pending: ${pendingCount}\n✅ Approved: ${approvedCount}\n❌ Rejected: ${rejectedCount}`,
+            `📊 Total: ${reservations.length}\n\n⏳ Pending: ${pendingCount}\n✅ Approved: ${approvedCount}\n🌟 Completed: ${completedCount}\n❌ Rejected: ${rejectedCount}\n🚫 Cancelled: ${cancelledCount}`,
             [{ text: 'OK' }]
           );
         }}

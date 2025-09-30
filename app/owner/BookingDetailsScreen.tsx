@@ -1,18 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, XCircle, Star, Bed, Wifi, Car, Coffee, Shield } from 'lucide-react-native';
 import { Card, Chip, Avatar, Divider } from 'react-native-paper';
-import { reservationAPI, Reservation } from '@/services/reservationService';
+import { reservationAPI, Reservation, feedbackAPI } from '@/services/reservationService';
 
 export default function BookingDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [processing, setProcessing] = useState(false);
+  const [feedbackEligibility, setFeedbackEligibility] = useState<any>(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(true);
   
   // Parse the reservation data from params
   const reservation: Reservation = JSON.parse(params.reservation as string);
+
+  useEffect(() => {
+    checkFeedbackEligibility();
+  }, []);
+
+  const checkFeedbackEligibility = async () => {
+    try {
+      setLoadingFeedback(true);
+      const eligibility = await feedbackAPI.getFeedbackEligibility(reservation._id);
+      setFeedbackEligibility(eligibility);
+    } catch (error) {
+      console.error('Error checking feedback eligibility:', error);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
 
   const handleStatusUpdate = async (newStatus: 'approved' | 'rejected') => {
     try {
@@ -68,6 +86,83 @@ export default function BookingDetailsScreen() {
     );
   };
 
+  const handleComplete = async () => {
+    Alert.alert(
+      'Complete Reservation',
+      `Mark this reservation as completed? This will allow both parties to rate each other.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Complete',
+          onPress: async () => {
+            try {
+              setProcessing(true);
+              await reservationAPI.completeReservation(reservation._id);
+              Alert.alert(
+                'Success',
+                'Reservation marked as completed successfully!',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => router.back()
+                  }
+                ]
+              );
+            } catch (error: any) {
+              console.error('Error completing reservation:', error);
+              Alert.alert('Error', 'Failed to complete reservation. Please try again.');
+            } finally {
+              setProcessing(false);
+            }
+          },
+          style: 'default'
+        }
+      ]
+    );
+  };
+
+  const handleCancel = async () => {
+    Alert.alert(
+      'Cancel Reservation',
+      `Are you sure you want to cancel this reservation? This action cannot be undone.`,
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          onPress: async () => {
+            try {
+              setProcessing(true);
+              await reservationAPI.cancelReservation(reservation._id);
+              Alert.alert(
+                'Success',
+                'Reservation cancelled successfully!',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => router.back()
+                  }
+                ]
+              );
+            } catch (error: any) {
+              console.error('Error cancelling reservation:', error);
+              Alert.alert('Error', 'Failed to cancel reservation. Please try again.');
+            } finally {
+              setProcessing(false);
+            }
+          },
+          style: 'destructive'
+        }
+      ]
+    );
+  };
+
+  const handleRateCustomer = () => {
+    router.push({
+      pathname: './CustomerRatingScreen',
+      params: { reservation: JSON.stringify(reservation) }
+    });
+  };
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -93,6 +188,7 @@ export default function BookingDetailsScreen() {
       case 'pending': return '#F59E0B';
       case 'rejected': return '#EF4444';
       case 'cancelled': return '#6B7280';
+      case 'completed': return '#8B5CF6';
       default: return '#6B7280';
     }
   };
@@ -127,8 +223,10 @@ export default function BookingDetailsScreen() {
                       style={{ backgroundColor: `${getStatusColor(reservation.status)}20` }}>
                   {reservation.status === 'approved' ? (
                     <CheckCircle size={32} color={getStatusColor(reservation.status)} />
-                  ) : reservation.status === 'rejected' ? (
+                  ) : reservation.status === 'rejected' || reservation.status === 'cancelled' ? (
                     <XCircle size={32} color={getStatusColor(reservation.status)} />
+                  ) : reservation.status === 'completed' ? (
+                    <Star size={32} color={getStatusColor(reservation.status)} />
                   ) : (
                     <Clock size={32} color={getStatusColor(reservation.status)} />
                   )}
@@ -240,15 +338,57 @@ export default function BookingDetailsScreen() {
           </Card>
         </View>
 
-        {/* Action Buttons - Only show for pending reservations */}
-        {reservation.status === 'pending' && (
-          <View className="px-6 pb-8">
-            <View className="flex-row gap-4">
+        {/* Action Buttons - Dynamic based on status */}
+        <View className="px-6 pb-8">
+          {reservation.status === 'pending' && (
+            <View className="space-y-3">
+              <View className="flex-row gap-4">
+                <TouchableOpacity
+                  onPress={handleReject}
+                  disabled={processing}
+                  className={`flex-1 py-4 rounded-2xl ${
+                    processing ? 'bg-gray-300' : 'bg-red-500'
+                  } shadow-lg`}
+                  style={{ elevation: 3 }}
+                >
+                  <View className="flex-row items-center justify-center">
+                    {processing ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <XCircle color="white" size={20} />
+                    )}
+                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                      Reject
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleApprove}
+                  disabled={processing}
+                  className={`flex-1 py-4 rounded-2xl ${
+                    processing ? 'bg-gray-300' : 'bg-green-500'
+                  } shadow-lg`}
+                  style={{ elevation: 3 }}
+                >
+                  <View className="flex-row items-center justify-center">
+                    {processing ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <CheckCircle color="white" size={20} />
+                    )}
+                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                      Approve
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+              
               <TouchableOpacity
-                onPress={handleReject}
+                onPress={handleCancel}
                 disabled={processing}
-                className={`flex-1 py-4 rounded-2xl ${
-                  processing ? 'bg-gray-300' : 'bg-red-500'
+                className={`py-4 rounded-2xl ${
+                  processing ? 'bg-gray-300' : 'bg-gray-600'
                 } shadow-lg`}
                 style={{ elevation: 3 }}
               >
@@ -259,16 +399,20 @@ export default function BookingDetailsScreen() {
                     <XCircle color="white" size={20} />
                   )}
                   <Text className="text-white font-bold font-inter ml-2 text-base">
-                    Reject Booking
+                    Cancel Booking
                   </Text>
                 </View>
               </TouchableOpacity>
+            </View>
+          )}
 
+          {reservation.status === 'approved' && (
+            <View className="space-y-3">
               <TouchableOpacity
-                onPress={handleApprove}
+                onPress={handleComplete}
                 disabled={processing}
-                className={`flex-1 py-4 rounded-2xl ${
-                  processing ? 'bg-gray-300' : 'bg-green-500'
+                className={`py-4 rounded-2xl ${
+                  processing ? 'bg-gray-300' : 'bg-purple-600'
                 } shadow-lg`}
                 style={{ elevation: 3 }}
               >
@@ -279,13 +423,76 @@ export default function BookingDetailsScreen() {
                     <CheckCircle color="white" size={20} />
                   )}
                   <Text className="text-white font-bold font-inter ml-2 text-base">
-                    Approve Booking
+                    Mark as Completed
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleCancel}
+                disabled={processing}
+                className={`py-4 rounded-2xl ${
+                  processing ? 'bg-gray-300' : 'bg-gray-600'
+                } shadow-lg`}
+                style={{ elevation: 3 }}
+              >
+                <View className="flex-row items-center justify-center">
+                  {processing ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <XCircle color="white" size={20} />
+                  )}
+                  <Text className="text-white font-bold font-inter ml-2 text-base">
+                    Cancel Booking
                   </Text>
                 </View>
               </TouchableOpacity>
             </View>
-          </View>
-        )}
+          )}
+
+          {reservation.status === 'completed' && (
+            <View className="space-y-3">
+              {!loadingFeedback && feedbackEligibility && !feedbackEligibility.alreadySubmitted && (
+                <TouchableOpacity
+                  onPress={handleRateCustomer}
+                  className="py-4 rounded-2xl bg-blue-600 shadow-lg"
+                  style={{ elevation: 3 }}
+                >
+                  <View className="flex-row items-center justify-center">
+                    <Star color="white" size={20} />
+                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                      Rate Customer
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              
+              {!loadingFeedback && feedbackEligibility && feedbackEligibility.alreadySubmitted && (
+                <View className="py-4 px-6 rounded-2xl bg-green-100 border border-green-300">
+                  <Text className="text-green-800 font-semibold font-inter text-center">
+                    ✓ You have already rated this customer
+                  </Text>
+                </View>
+              )}
+              
+              {feedbackEligibility?.mutualFeedback?.bothCompleted && (
+                <View className="py-3 px-6 rounded-2xl bg-purple-100 border border-purple-300">
+                  <Text className="text-purple-800 font-medium font-inter text-center text-sm">
+                    🤝 Mutual feedback completed! Both parties have rated each other.
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {(reservation.status === 'rejected' || reservation.status === 'cancelled') && (
+            <View className="py-4 px-6 rounded-2xl bg-gray-100 border border-gray-300">
+              <Text className="text-gray-600 font-medium font-inter text-center">
+                This reservation has been {reservation.status}.
+              </Text>
+            </View>
+          )}
+        </View>
 
         <View className="mb-8" />
       </ScrollView>
