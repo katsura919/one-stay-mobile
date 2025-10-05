@@ -6,6 +6,7 @@ import "../global.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { Roboto_400Regular, Roboto_500Medium, Roboto_700Bold } from '@expo-google-fonts/roboto';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete
@@ -17,6 +18,9 @@ export default function RootLayout() {
     'Inter-Medium': Inter_500Medium,
     'Inter-SemiBold': Inter_600SemiBold,
     'Inter-Bold': Inter_700Bold,
+    'Roboto': Roboto_400Regular,
+    'Roboto-Medium': Roboto_500Medium,
+    'Roboto-Bold': Roboto_700Bold,
   });
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
-import { Card, Chip, FAB, Searchbar, Avatar } from 'react-native-paper';
-import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye, ChevronRight} from 'lucide-react-native';
+import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
+import { Card, Chip, FAB, Avatar } from 'react-native-paper';
+import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye, ChevronRight, Search, X} from 'lucide-react-native';
 import { reservationAPI, Reservation } from '@/services/reservationService';
 import { useAuth } from '@/contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -91,7 +91,7 @@ export default function BookingsScreen() {
       <SafeAreaView className="flex-1 bg-gray-100">
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#1F2937" />
-          <Text className="text-gray-600 mt-4 font-inter text-base">Loading reservations...</Text>
+          <Text style={{ color: '#6B7280', marginTop: 16, fontFamily: 'Roboto', fontSize: 16 }}>Loading reservations...</Text>
         </View>
       </SafeAreaView>
     );
@@ -110,27 +110,33 @@ export default function BookingsScreen() {
         }
       >
         {/* Header */}
-        <View className="px-6 pt-12 pb-6 bg-white">
-          <Text className="text-3xl font-bold font-inter text-gray-900 mb-2">Reservations</Text>
-          <Text className="text-base text-gray-600 font-inter mb-6">
-            Manage your property bookings
-          </Text>
+        <View className="px-6 pb-6 ">
 
-          
-          {/* Search and Filters */}
-          <Searchbar
-            placeholder="Search by guest, room, or resort..."
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            className="mb-6"
-            style={{ 
-              fontFamily: 'Inter',
-              borderRadius: 16,
-              elevation: 0,
-              backgroundColor: '#F9FAFB'
-            }}
-            inputStyle={{ fontFamily: 'Inter' }}
-          />
+
+          {/* Search Input */}
+          <View className="pb-4">
+            <View className="flex-row items-center bg-white rounded-2xl px-2">
+              <Search color="#9CA3AF" size={20} />
+              <TextInput
+                className="flex-1 ml-3 text-base text-gray-900"
+                placeholder="Search by guest, room, or resort..."
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                style={{ fontSize: 16, fontFamily: 'Roboto' }}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery('')}
+                  className="w-5 h-5 items-center justify-center ml-2"
+                  activeOpacity={0.6}
+                >
+                  <X color="#9CA3AF" size={16} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
             {['All', 'Pending', 'Approved', 'Completed', 'Rejected', 'Cancelled'].map((filter, index) => {
@@ -157,7 +163,7 @@ export default function BookingsScreen() {
                   }}
                   textStyle={{
                     color: isSelected ? 'white' : '#6B7280',
-                    fontFamily: 'Inter',
+                    fontFamily: 'Roboto-Medium',
                     fontWeight: '600',
                     fontSize: 13
                   }}
@@ -176,8 +182,8 @@ export default function BookingsScreen() {
               <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-6">
                 <Calendar color="#9CA3AF" size={40} />
               </View>
-              <Text className="text-gray-900 text-xl font-bold font-inter mb-2 text-center">No reservations found</Text>
-              <Text className="text-gray-500 text-center font-inter leading-6">
+              <Text style={{ color: '#111827', fontSize: 20, fontWeight: 'bold', fontFamily: 'Roboto-Bold', marginBottom: 8, textAlign: 'center' }}>No reservations found</Text>
+              <Text style={{ color: '#6B7280', textAlign: 'center', fontFamily: 'Roboto', lineHeight: 24 }}>
                 {selectedFilter === 'Pending' 
                   ? 'No pending reservations to review at the moment'
                   : selectedFilter === 'Completed'
@@ -220,10 +226,10 @@ export default function BookingsScreen() {
                             labelStyle={{ fontSize: 18, fontWeight: 'bold' }}
                           />
                           <View className="ml-4 flex-1">
-                            <Text className="font-bold font-inter text-gray-900 text-lg">
+                            <Text style={{ fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', fontSize: 18 }}>
                               {userInfo?.username || 'Guest'}
                             </Text>
-                            <Text className="text-sm text-gray-600 font-inter mt-1">
+                            <Text style={{ fontSize: 14, color: '#6B7280', fontFamily: 'Roboto', marginTop: 4 }}>
                               {resortInfo?.resort_name || 'Resort'} • {roomInfo?.room_type || 'Room'}
                             </Text>
                           </View>
@@ -241,7 +247,7 @@ export default function BookingsScreen() {
                             textStyle={{ 
                               color: getStatusColor(reservation.status), 
                               fontSize: 12, 
-                              fontFamily: 'Inter', 
+                              fontFamily: 'Roboto-Medium', 
                               fontWeight: '600' 
                             }}
                           >
@@ -255,11 +261,11 @@ export default function BookingsScreen() {
                         <View className="flex-row items-center justify-between mb-3">
                           <View className="flex-row items-center">
                             <Calendar size={16} color="#6B7280" />
-                            <Text className="ml-2 text-sm font-medium text-gray-700 font-inter">
+                            <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
                               Check-in
                             </Text>
                           </View>
-                          <Text className="text-sm font-semibold text-gray-900 font-inter">
+                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', fontFamily: 'Roboto-Medium' }}>
                             {formatDate(reservation.start_date)}
                           </Text>
                         </View>
@@ -267,21 +273,21 @@ export default function BookingsScreen() {
                         <View className="flex-row items-center justify-between mb-3">
                           <View className="flex-row items-center">
                             <Calendar size={16} color="#6B7280" />
-                            <Text className="ml-2 text-sm font-medium text-gray-700 font-inter">
+                            <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
                               Check-out
                             </Text>
                           </View>
-                          <Text className="text-sm font-semibold text-gray-900 font-inter">
+                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', fontFamily: 'Roboto-Medium' }}>
                             {formatDate(reservation.end_date)}
                           </Text>
                         </View>
                         
                         <View className="border-t border-gray-200 pt-3 mt-3">
                           <View className="flex-row items-center justify-between">
-                            <Text className="text-sm font-medium text-gray-700 font-inter">
+                            <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
                               Total Amount
                             </Text>
-                            <Text className="text-xl font-bold text-gray-900 font-inter">
+                            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111827', fontFamily: 'Roboto-Bold' }}>
                               ${reservation.total_price}
                             </Text>
                           </View>
@@ -291,7 +297,7 @@ export default function BookingsScreen() {
                       {/* View Details Button */}
                       <View className="flex-row items-center justify-center py-3 bg-gray-900 rounded-2xl">
                         <Eye color="white" size={18} />
-                        <Text className="text-white font-semibold font-inter ml-2 mr-2">
+                        <Text style={{ color: 'white', fontWeight: '600', fontFamily: 'Roboto-Medium', marginLeft: 8, marginRight: 8 }}>
                           View Details
                         </Text>
                         <ChevronRight color="white" size={16} />
