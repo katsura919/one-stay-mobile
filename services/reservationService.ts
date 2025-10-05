@@ -34,6 +34,41 @@ export interface Reservation {
   };
 }
 
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalReservations: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  limit: number;
+}
+
+export interface FilterInfo {
+  status: string;
+  search: string;
+  startDate: string | null;
+  endDate: string | null;
+  sortBy: string;
+  sortOrder: string;
+}
+
+export interface OwnerReservationsParams {
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface OwnerReservationsResponse {
+  reservations: Reservation[];
+  pagination: PaginationInfo;
+  filters: FilterInfo;
+}
+
 export interface AvailabilityCheck {
   available: boolean;
   room: {
@@ -161,12 +196,37 @@ export const reservationAPI = {
     }
   },
 
-  // Get owner's reservations
-  getOwnerReservations: async (status?: string): Promise<{ reservations: Reservation[] }> => {
+  // Get owner's reservations with search, filtering, and pagination
+  getOwnerReservations: async (params?: OwnerReservationsParams): Promise<OwnerReservationsResponse> => {
     try {
-      const url = status 
-        ? `/reservation/owner-reservations?status=${status}`
-        : '/reservation/owner-reservations';
+      const queryParams = new URLSearchParams();
+      
+      if (params?.status && params.status !== 'all') {
+        queryParams.append('status', params.status);
+      }
+      if (params?.search) {
+        queryParams.append('search', params.search);
+      }
+      if (params?.page) {
+        queryParams.append('page', params.page.toString());
+      }
+      if (params?.limit) {
+        queryParams.append('limit', params.limit.toString());
+      }
+      if (params?.sortBy) {
+        queryParams.append('sortBy', params.sortBy);
+      }
+      if (params?.sortOrder) {
+        queryParams.append('sortOrder', params.sortOrder);
+      }
+      if (params?.startDate) {
+        queryParams.append('startDate', params.startDate);
+      }
+      if (params?.endDate) {
+        queryParams.append('endDate', params.endDate);
+      }
+
+      const url = `/reservation/owner-reservations${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       const response = await authenticatedApiRequest(url);
       return response;
     } catch (error) {

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
 import { Card, Chip, FAB, Avatar } from 'react-native-paper';
-import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye, ChevronRight, Search, X} from 'lucide-react-native';
-import { reservationAPI, Reservation } from '@/services/reservationService';
+import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Eye, ChevronRight, Search, X, ChevronDown, ChevronUp} from 'lucide-react-native';
+import { reservationAPI, Reservation, PaginationInfo, FilterInfo } from '@/services/reservationService';
 import { useAuth } from '@/contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,28 +15,73 @@ export default function BookingsScreen() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchReservations();
-  }, [selectedFilter]);
+  }, [selectedFilter, searchQuery]);
 
-  const fetchReservations = async (isRefresh = false) => {
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery !== '') {
+        setCurrentPage(1);
+        fetchReservations();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const fetchReservations = async (isRefresh = false, loadMore = false) => {
     try {
       if (isRefresh) {
         setRefreshing(true);
+        setCurrentPage(1);
+      } else if (loadMore) {
+        setLoadingMore(true);
       } else {
         setLoading(true);
       }
 
+      const pageToLoad = loadMore ? currentPage + 1 : (isRefresh ? 1 : currentPage);
       const filterValue = selectedFilter.toLowerCase() === 'all' ? undefined : selectedFilter.toLowerCase();
-      const response = await reservationAPI.getOwnerReservations(filterValue);
-      setReservations(response.reservations || []);
+      
+      const response = await reservationAPI.getOwnerReservations({
+        status: filterValue,
+        search: searchQuery.trim() || undefined,
+        page: pageToLoad,
+        limit: 10,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+
+      if (loadMore) {
+        setReservations(prev => [...prev, ...response.reservations]);
+        setCurrentPage(pageToLoad);
+      } else {
+        setReservations(response.reservations || []);
+        if (!isRefresh) {
+          setCurrentPage(1);
+        }
+      }
+      
+      setPagination(response.pagination);
     } catch (error: any) {
       console.error('Error fetching reservations:', error);
       Alert.alert('Error', 'Failed to load reservations. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (pagination?.hasNextPage && !loadingMore) {
+      fetchReservations(false, true);
     }
   };
 
@@ -77,28 +122,11 @@ export default function BookingsScreen() {
     }
   };
 
-  const filteredReservations = reservations.filter(reservation => {
-    const matchesSearch = searchQuery === '' || 
-      reservation.user_id_populated?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reservation.room_id_populated?.room_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reservation.room_id_populated?.resort_id?.resort_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesSearch;
-  });
-
-  if (loading && !refreshing) {
-    return (
-      <SafeAreaView className="flex-1 bg-gray-100">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1F2937" />
-          <Text style={{ color: '#6B7280', marginTop: 16, fontFamily: 'Roboto', fontSize: 16 }}>Loading reservations...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // No need for client-side filtering since we're doing server-side filtering
+  const filteredReservations = reservations;
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 h-[100v] bg-gray-100">
       <ScrollView 
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -111,7 +139,9 @@ export default function BookingsScreen() {
       >
         {/* Header */}
         <View className="px-6 pb-6 ">
-
+          <Text className="text-lg text-center p-2" style={{ fontFamily: 'Roboto-Bold' }}>
+            Reservations
+          </Text>
 
           {/* Search Input */}
           <View className="pb-4">
@@ -155,7 +185,10 @@ export default function BookingsScreen() {
                   key={filter}
                   mode="flat"
                   selected={isSelected}
-                  onPress={() => setSelectedFilter(filter)}
+                  onPress={() => {
+                    setSelectedFilter(filter);
+                    setCurrentPage(1);
+                  }}
                   className={`mx-1 ${index === 0 ? 'ml-1' : ''}`}
                   style={{
                     backgroundColor: isSelected ? colors[filter as keyof typeof colors] : '#F3F4F6',
@@ -175,22 +208,38 @@ export default function BookingsScreen() {
           </ScrollView>
         </View>
 
+        {/* Pagination Info */}
+        {pagination && pagination.totalReservations > 0 && (
+          <View className="px-6 pb-4">
+            <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center' }}>
+              Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalReservations)} of {pagination.totalReservations} reservations
+            </Text>
+          </View>
+        )}
+
         {/* Reservations List */}
         <View className="px-6 pt-2">
-          {filteredReservations.length === 0 ? (
+          {loading && !refreshing ? (
+            <View className="flex-1 justify-center items-center py-32 px-8">
+              <ActivityIndicator size="large" color="#1F2937" />
+              <Text style={{ color: '#6B7280', marginTop: 16, fontFamily: 'Roboto', fontSize: 16 }}>Loading reservations...</Text>
+            </View>
+          ) : filteredReservations.length === 0 ? (
             <View className="flex-1 justify-center items-center py-32 px-8">
               <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-6">
                 <Calendar color="#9CA3AF" size={40} />
               </View>
               <Text style={{ color: '#111827', fontSize: 20, fontWeight: 'bold', fontFamily: 'Roboto-Bold', marginBottom: 8, textAlign: 'center' }}>No reservations found</Text>
               <Text style={{ color: '#6B7280', textAlign: 'center', fontFamily: 'Roboto', lineHeight: 24 }}>
-                {selectedFilter === 'Pending' 
-                  ? 'No pending reservations to review at the moment'
-                  : selectedFilter === 'Completed'
-                  ? 'No completed reservations found'
-                  : selectedFilter === 'Cancelled'
-                  ? 'No cancelled reservations found'
-                  : `No ${selectedFilter.toLowerCase()} reservations found`
+                {searchQuery ? 
+                  `No reservations found matching "${searchQuery}"` :
+                  selectedFilter === 'Pending' 
+                    ? 'No pending reservations to review at the moment'
+                    : selectedFilter === 'Completed'
+                    ? 'No completed reservations found'
+                    : selectedFilter === 'Cancelled'
+                    ? 'No cancelled reservations found'
+                    : `No ${selectedFilter.toLowerCase()} reservations found`
                 }
               </Text>
             </View>
@@ -307,6 +356,33 @@ export default function BookingsScreen() {
                 </TouchableOpacity>
               );
             })
+          )}
+
+          {/* Load More Button */}
+          {pagination?.hasNextPage && (
+            <TouchableOpacity
+              onPress={handleLoadMore}
+              disabled={loadingMore}
+              className="mt-6 mb-4"
+            >
+              <View className="bg-gray-100 border border-gray-200 rounded-2xl py-4 px-6 flex-row items-center justify-center">
+                {loadingMore ? (
+                  <>
+                    <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>
+                      Loading more...
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown color="#6B7280" size={20} style={{ marginRight: 8 }} />
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>
+                      Load More ({pagination.totalReservations - (pagination.currentPage * pagination.limit)} remaining)
+                    </Text>
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
           )}
         </View>
 

@@ -20,9 +20,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": false,
-      "navigationBar": {
-        "backgroundColor": "#000000"
-      },
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBD3-Gvi_h40ob62IAomO1OV7mHe7SKeFo"
