@@ -139,7 +139,7 @@ export default function BookingsScreen() {
       >
         {/* Header */}
         <View className="px-6 pb-6 ">
-          <Text className="text-lg text-center p-2" style={{ fontFamily: 'Roboto-Bold' }}>
+          <Text className="text-lg text-center p-2 text-gray-600" style={{ fontFamily: 'Roboto-Bold' }}>
             Reservations
           </Text>
 
@@ -208,14 +208,7 @@ export default function BookingsScreen() {
           </ScrollView>
         </View>
 
-        {/* Pagination Info */}
-        {pagination && pagination.totalReservations > 0 && (
-          <View className="px-6 pb-4">
-            <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center' }}>
-              Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalReservations)} of {pagination.totalReservations} reservations
-            </Text>
-          </View>
-        )}
+
 
         {/* Reservations List */}
         <View className="px-6 pt-2">
@@ -256,100 +249,69 @@ export default function BookingsScreen() {
                   onPress={() => handleViewDetails(reservation)}
                   activeOpacity={0.7}
                 >
-                  <Card className="mb-4" style={{ 
-                    borderRadius: 20, 
-                    elevation: 2,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 3,
+                  <Card className="mb-4 shadow-none border" style={{ 
+                    borderRadius: 10,
+                    borderColor: '#E5E7EB',
+                    borderWidth: 1,
                   }}>
-                    <Card.Content className="p-6">
-                      {/* Header with Guest Info and Status */}
-                      <View className="flex-row items-center justify-between mb-5">
-                        <View className="flex-row items-center flex-1">
-                          <Avatar.Text 
-                            size={48} 
-                            label={userInfo?.username?.[0]?.toUpperCase() || 'G'} 
-                            style={{ backgroundColor: getStatusColor(reservation.status) }}
-                            labelStyle={{ fontSize: 18, fontWeight: 'bold' }}
-                          />
-                          <View className="ml-4 flex-1">
-                            <Text style={{ fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', fontSize: 18 }}>
-                              {userInfo?.username || 'Guest'}
-                            </Text>
-                            <Text style={{ fontSize: 14, color: '#6B7280', fontFamily: 'Roboto', marginTop: 4 }}>
-                              {resortInfo?.resort_name || 'Resort'} • {roomInfo?.room_type || 'Room'}
-                            </Text>
-                          </View>
-                        </View>
-                        
-                        <View className="items-end">
-                          <Chip
-                            mode="flat"
-                            compact
-                            style={{
-                              backgroundColor: `${getStatusColor(reservation.status)}20`,
-                              borderWidth: 1,
-                              borderColor: getStatusColor(reservation.status),
-                            }}
-                            textStyle={{ 
-                              color: getStatusColor(reservation.status), 
-                              fontSize: 12, 
-                              fontFamily: 'Roboto-Medium', 
-                              fontWeight: '600' 
-                            }}
-                          >
-                            {reservation.status.toUpperCase()}
-                          </Chip>
-                        </View>
+                    <Card.Content className="p-4">
+                      {/* Header: Customer Name and Status */}
+                      <View className="flex-row items-center justify-between mb-3">
+                        <Text style={{ fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', fontSize: 16 }}>
+                          {userInfo?.username || 'Guest'}
+                        </Text>
+                        <Chip
+                          mode="flat"
+                          compact
+                          style={{
+                            backgroundColor: `${getStatusColor(reservation.status)}20`,
+                            borderWidth: 1,
+                            borderColor: getStatusColor(reservation.status),
+                          }}
+                          textStyle={{ 
+                            color: getStatusColor(reservation.status), 
+                            fontSize: 11, 
+                            fontFamily: 'Roboto-Medium', 
+                            fontWeight: '600' 
+                          }}
+                        >
+                          {reservation.status.toUpperCase()}
+                        </Chip>
                       </View>
 
-                      {/* Booking Details */}
-                      <View className="bg-gray-50 p-4 rounded-2xl mb-4">
-                        <View className="flex-row items-center justify-between mb-3">
-                          <View className="flex-row items-center">
-                            <Calendar size={16} color="#6B7280" />
-                            <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
-                              Check-in
-                            </Text>
-                          </View>
-                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', fontFamily: 'Roboto-Medium' }}>
+                      {/* Room Info */}
+                      <Text style={{ fontSize: 13, color: '#6B7280', fontFamily: 'Roboto', marginBottom: 12 }}>
+                        {resortInfo?.resort_name || 'Resort'} • {roomInfo?.room_type || 'Room'}
+                      </Text>
+
+                      {/* Dates and Duration */}
+                      <View className="flex-row justify-between items-center mb-3">
+                        <View>
+                          <Text style={{ fontSize: 12, color: '#6B7280', fontFamily: 'Roboto-Medium' }}>Check-in</Text>
+                          <Text style={{ fontSize: 13, color: '#111827', fontFamily: 'Roboto-Medium', marginTop: 2 }}>
                             {formatDate(reservation.start_date)}
                           </Text>
                         </View>
-                        
-                        <View className="flex-row items-center justify-between mb-3">
-                          <View className="flex-row items-center">
-                            <Calendar size={16} color="#6B7280" />
-                            <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
-                              Check-out
-                            </Text>
-                          </View>
-                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', fontFamily: 'Roboto-Medium' }}>
+                        <View className="items-center">
+                          <Text style={{ fontSize: 12, color: '#6B7280', fontFamily: 'Roboto-Medium' }}>Duration</Text>
+                          <Text style={{ fontSize: 13, color: '#111827', fontFamily: 'Roboto-Bold', marginTop: 2 }}>
+                            {Math.ceil((new Date(reservation.end_date).getTime() - new Date(reservation.start_date).getTime()) / (1000 * 60 * 60 * 24))} days
+                          </Text>
+                        </View>
+                        <View className="items-end">
+                          <Text style={{ fontSize: 12, color: '#6B7280', fontFamily: 'Roboto-Medium' }}>Check-out</Text>
+                          <Text style={{ fontSize: 13, color: '#111827', fontFamily: 'Roboto-Medium', marginTop: 2 }}>
                             {formatDate(reservation.end_date)}
                           </Text>
                         </View>
-                        
-                        <View className="border-t border-gray-200 pt-3 mt-3">
-                          <View className="flex-row items-center justify-between">
-                            <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', fontFamily: 'Roboto-Medium' }}>
-                              Total Amount
-                            </Text>
-                            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111827', fontFamily: 'Roboto-Bold' }}>
-                              ${reservation.total_price}
-                            </Text>
-                          </View>
-                        </View>
                       </View>
 
-                      {/* View Details Button */}
-                      <View className="flex-row items-center justify-center py-3 bg-gray-900 rounded-2xl">
-                        <Eye color="white" size={18} />
-                        <Text style={{ color: 'white', fontWeight: '600', fontFamily: 'Roboto-Medium', marginLeft: 8, marginRight: 8 }}>
-                          View Details
+                      {/* Amount */}
+                      <View className="border-t border-gray-200 pt-3 flex-row justify-between items-center">
+                        <Text style={{ fontSize: 13, color: '#6B7280', fontFamily: 'Roboto-Medium' }}>Total Amount</Text>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#111827', fontFamily: 'Roboto-Bold' }}>
+                          ₱{reservation.total_price}
                         </Text>
-                        <ChevronRight color="white" size={16} />
                       </View>
                     </Card.Content>
                   </Card>
@@ -357,6 +319,15 @@ export default function BookingsScreen() {
               );
             })
           )}
+
+        {/* Pagination Info */}
+        {pagination && pagination.totalReservations > 0 && (
+          <View className="px-6 pb-4">
+            <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center' }}>
+              Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalReservations)} of {pagination.totalReservations} reservations
+            </Text>
+          </View>
+        )}
 
           {/* Load More Button */}
           {pagination?.hasNextPage && (
