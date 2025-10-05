@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Search, MessageCircle } from 'lucide-react-native';
 import { OwnerChat } from '../../../data/owner-chat-data';
-import { ownerChatSocket, OwnerChatMessage } from '../../../lib/owner-chat-socket';
+import { ownerChatSocket, ChatMessage, ChatUpdateData } from '../../../lib/chat-socket';
 import { chatService } from '../../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
@@ -35,7 +35,7 @@ export default function ChatScreen() {
 
   const initializeChat = async () => {
     try {
-      // Connect to socket
+      // Connect to socket as owner (auto-detects role from user context)
       const connected = await ownerChatSocket.connect();
       setSocketConnected(connected);
       
@@ -67,8 +67,14 @@ export default function ChatScreen() {
 
   const setupSocketListeners = () => {
     // Listen for new messages
-    ownerChatSocket.onMessage((message: OwnerChatMessage) => {
+    ownerChatSocket.onMessage((message: ChatMessage) => {
       updateChatWithNewMessage(message);
+    });
+
+    // Listen for chat updates (real-time chat list updates)
+    ownerChatSocket.onChatUpdate((update: ChatUpdateData) => {
+      console.log('[OwnerChatScreen] Received chat_updated event:', update);
+      handleChatUpdate(update);
     });
 
     // Listen for connection changes
@@ -130,7 +136,7 @@ export default function ChatScreen() {
     }
   };
 
-  const updateChatWithNewMessage = (message: OwnerChatMessage) => {
+  const updateChatWithNewMessage = (message: ChatMessage) => {
     setChats(prevChats => {
       return prevChats.map(chat => {
         if (chat._id === message.chatId) {
@@ -145,6 +151,46 @@ export default function ChatScreen() {
         }
         return chat;
       });
+    });
+  };
+
+  const handleChatUpdate = (update: ChatUpdateData) => {
+    console.log('Owner received chat update:', update);
+    
+    setChats(prevChats => {
+      let updatedChats = [...prevChats];
+      
+      if (update.isNewChat) {
+        // This is a new chat, we need to reload the full chat list
+        console.log('New chat detected for owner, reloading chat list...');
+        loadChats();
+        return prevChats; // Return current state, loadChats will update it
+      } else {
+        // Update existing chat
+        const existingChatIndex = updatedChats.findIndex(chat => chat._id === update.chatId);
+        
+        if (existingChatIndex >= 0) {
+          // Update existing chat
+          updatedChats[existingChatIndex] = {
+            ...updatedChats[existingChatIndex],
+            last_message: update.lastMessage,
+            last_message_time: update.lastMessageTime,
+            unread_count: update.sender === 'customer' ? 
+              updatedChats[existingChatIndex].unread_count + 1 : 
+              updatedChats[existingChatIndex].unread_count
+          };
+        } else {
+          // Chat not found locally, reload the full list
+          console.log('Chat not found locally for owner, reloading chat list...');
+          loadChats();
+          return prevChats;
+        }
+        
+        // Re-sort chats after update to keep most recent at top
+        return updatedChats.sort((a, b) => {
+          return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+        });
+      }
     });
   };
   const handleChatPress = (chat: OwnerChat) => {
@@ -166,10 +212,14 @@ export default function ChatScreen() {
 
   const formatTime = (date: Date) => {
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     
-    if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
       return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
     } else if (diffInHours < 24) {
       return date.toLocaleTimeString('en-US', { 
         hour: 'numeric', 

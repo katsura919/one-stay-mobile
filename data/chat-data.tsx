@@ -1,9 +1,7 @@
-export interface ChatMessage {
-  _id: string;
-  sender: 'customer' | 'owner';
-  text: string;
-  timestamp: Date;
-}
+import { ChatMessage as UnifiedChatMessage } from '../lib/chat-socket';
+
+// Re-export unified ChatMessage for backward compatibility
+export type ChatMessage = UnifiedChatMessage;
 
 export interface Chat {
   _id: string;

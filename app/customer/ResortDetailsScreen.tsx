@@ -23,16 +23,20 @@ import {
   Wifi,
   Car,
   Coffee,
-  Waves
+  Waves,
+  MessageCircle
 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { resortAPI, Resort } from '@/services/resortService';
 import { roomAPI, Room } from '@/services/roomService';
+import { chatService } from '@/services/chatService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ResortDetailsScreen() {
   const { resortId } = useLocalSearchParams();
+  const { user } = useAuth();
   const [resort, setResort] = React.useState<Resort | null>(null);
   const [rooms, setRooms] = React.useState<Room[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -117,8 +121,29 @@ export default function ResortDetailsScreen() {
   };
 
   const handleContact = () => {
-    // TODO: Navigate to contact/chat screen
-    Alert.alert('Contact', 'Contact functionality will be implemented soon!');
+    // Navigate directly to search for existing chat or create new one in the conversation screen
+    router.push({
+      pathname: '/customer/CustomerChatConvo', 
+      params: {
+        resortId: resort?._id,
+        resortName: resort?.resort_name,
+        newChat: 'true' // Flag to indicate this is a new conversation
+      }
+    });
+  };
+
+  const handleSendMessage = () => {
+    if (!user) {
+      Alert.alert('Error', 'Please log in to send messages.');
+      return;
+    }
+    
+    if (!resort) {
+      Alert.alert('Error', 'Resort information not available.');
+      return;
+    }
+
+    handleContact();
   };
 
   if (loading) {
@@ -376,7 +401,7 @@ export default function ResortDetailsScreen() {
             </Text>
             <View className="space-y-3">
               <TouchableOpacity 
-                onPress={handleContact}
+                onPress={() => Alert.alert('Call', 'Calling functionality will be implemented soon!')}
                 className="flex-row items-center py-3 px-4 bg-gray-50 rounded-lg"
               >
                 <Phone color="#6B7280" size={20} />
@@ -384,11 +409,13 @@ export default function ResortDetailsScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                onPress={handleContact}
-                className="flex-row items-center py-3 px-4 bg-gray-50 rounded-lg"
+                onPress={handleSendMessage}
+                className="flex-row items-center py-3 px-4 rounded-lg bg-blue-50 border border-blue-200"
               >
-                <Mail color="#6B7280" size={20} />
-                <Text className="text-base text-gray-700 ml-3">Send Message</Text>
+                <MessageCircle color="#3B82F6" size={20} />
+                <Text className="text-base ml-3 text-blue-700 font-medium">
+                  Send Message to Resort
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -408,10 +435,10 @@ export default function ResortDetailsScreen() {
           
           <View className="flex-row space-x-3">
             <TouchableOpacity 
-              onPress={handleContact}
+              onPress={handleSendMessage}
               className="bg-gray-100 px-6 py-3 rounded-lg"
             >
-              <Text className="text-base font-semibold text-gray-700">Contact</Text>
+              <Text className="text-base font-semibold text-gray-700">Message</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 

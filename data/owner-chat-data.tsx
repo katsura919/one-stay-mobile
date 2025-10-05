@@ -1,9 +1,7 @@
-export interface OwnerChatMessage {
-  _id: string;
-  sender: 'owner' | 'customer';
-  text: string;
-  timestamp: Date;
-}
+import { ChatMessage } from '../lib/chat-socket';
+
+// Re-export ChatMessage for backward compatibility
+export type OwnerChatMessage = ChatMessage;
 
 export interface OwnerChat {
   _id: string;
@@ -15,7 +13,7 @@ export interface OwnerChat {
   last_message: string;
   last_message_time: Date;
   unread_count: number;
-  messages: OwnerChatMessage[];
+  messages: ChatMessage[];
   status: 'active' | 'checked_out' | 'upcoming';
 }
 

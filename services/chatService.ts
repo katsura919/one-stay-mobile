@@ -22,11 +22,6 @@ export interface ChatApiResponse {
   deleted: boolean;
 }
 
-export interface StartChatRequest {
-  customer_id: string;
-  resort_id: string;
-}
-
 export interface SendMessageRequest {
   customer_id: string;
   resort_id: string;
@@ -35,14 +30,6 @@ export interface SendMessageRequest {
 }
 
 class ChatService {
-  // Start or get existing chat
-  async startChat(data: StartChatRequest): Promise<ChatApiResponse> {
-    return await authenticatedApiRequest('/chat/start', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
   // Send a message via REST API (backup to socket)
   async sendMessage(data: SendMessageRequest): Promise<ChatApiResponse> {
     return await authenticatedApiRequest('/chat/send', {
@@ -51,9 +38,32 @@ class ChatService {
     });
   }
 
-  // Get chat by ID
-  async getChat(chatId: string): Promise<ChatApiResponse> {
-    return await authenticatedApiRequest(`/chat/${chatId}`);
+  // Get chat by ID with optional pagination
+  async getChat(chatId: string, options?: { limit?: number; skip?: number }): Promise<ChatApiResponse> {
+    let url = `/chat/${chatId}`;
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.skip) params.append('skip', options.skip.toString());
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+    }
+    return await authenticatedApiRequest(url);
+  }
+
+  // Load more messages for a chat
+  async loadMoreMessages(chatId: string, options?: { limit?: number; skip?: number }): Promise<{ messages: any[]; pagination: any }> {
+    let url = `/chat/${chatId}/load-more`;
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.skip) params.append('skip', options.skip.toString());
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+    }
+    return await authenticatedApiRequest(url);
   }
 
   // Get all chats for a user (customer)

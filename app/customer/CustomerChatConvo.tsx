@@ -5,13 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, Phone, MoreVertical } from 'lucide-react-native';
 import { Chat, ChatMessage } from '../../data/chat-data';
-import { customerChatSocket, CustomerChatMessage } from '../../lib/customer-chat-socket';
+import { customerChatSocket, ChatMessage as SocketChatMessage } from '../../lib/chat-socket';
 import { chatService, ChatApiResponse } from '../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ChatConversation() {
   const insets = useSafeAreaInsets();
-  const { chatId } = useLocalSearchParams();
+  const { chatId, resortId, resortName, newChat } = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
   const { user } = useAuth();
 
@@ -23,14 +23,17 @@ export default function ChatConversation() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!chatId || !user) return;
+    if (!user) return;
+    
+    // Either we have a chatId (existing chat) or resortId (new chat)
+    if (!chatId && !resortId) return;
 
     initializeChat();
 
     return () => {
       customerChatSocket.disconnect();
     };
-  }, [chatId, user]);
+  }, [chatId, resortId, user]);
 
   const initializeChat = async () => {
     try {
@@ -47,11 +50,17 @@ export default function ChatConversation() {
     if (!user?.id) return;
 
     try {
-      const connected = await customerChatSocket.connect(user.id);
+      const connected = await customerChatSocket.connect(user.id, 'customer');
       setIsConnected(connected);
       
-      if (connected && chatId) {
-        customerChatSocket.joinChat(chatId as string);
+      if (connected) {
+        if (chatId) {
+          customerChatSocket.joinChat(chatId as string);
+        } else if (newChat === 'true') {
+          // For new chats, we'll join the room after the first message creates the real chat ID
+          // Don't join any room yet, just establish connection
+          console.log('Connected to socket for new chat, waiting for first message...');
+        }
       }
     } catch (error) {
       console.error('Error connecting to socket:', error);
@@ -60,17 +69,25 @@ export default function ChatConversation() {
   };
 
   const setupSocketListeners = () => {
-    customerChatSocket.onMessage((message: CustomerChatMessage) => {
-      if (message.chatId === chatId) {
-        const newMsg: ChatMessage = {
-          _id: message._id,
-          sender: message.sender,
-          text: message.text,
-          timestamp: new Date(message.timestamp),
-        };
-        
-        setMessages(prev => [...prev, newMsg]);
-        scrollToBottom();
+    customerChatSocket.onMessage((message: SocketChatMessage) => {
+      // Check if this message belongs to our current chat
+      const currentChatId = chat?._id;
+      const isForThisChat = message.chatId === chatId || 
+                           (currentChatId && currentChatId !== 'new-chat' && message.chatId === currentChatId);
+      
+      if (isForThisChat) {
+        // Only add messages from other users (not our own messages)
+        if (message.senderId !== user?.id) {
+          const newMsg: ChatMessage = {
+            _id: message._id,
+            sender: message.sender,
+            text: message.text,
+            timestamp: new Date(message.timestamp),
+          };
+          
+          setMessages(prev => [...prev, newMsg]);
+          scrollToBottom();
+        }
       }
     });
   };
@@ -98,18 +115,49 @@ export default function ChatConversation() {
   const loadChatDetails = async () => {
     try {
       setIsLoading(true);
-      const chats = await chatService.getUserChats(user!.id);
-      const foundChat = chats.find((c: ChatApiResponse) => c._id === chatId);
       
-      if (foundChat) {
-        const transformedChat = transformApiChatForCustomer(foundChat);
-        setChat(transformedChat);
-        // Load messages if available
-        if (transformedChat.messages) {
-          setMessages(transformedChat.messages);
+      if (chatId) {
+        // Existing chat - load messages
+        const chatResponse = await chatService.getChat(chatId as string, { limit: 5 });
+        console.log('Chat response:', chatResponse);
+        
+        if (chatResponse) {
+          const transformedChat = transformApiChatForCustomer(chatResponse);
+          setChat(transformedChat);
+          
+          // Load initial messages from the paginated response
+          if (chatResponse.messages) {
+            const initialMessages = chatResponse.messages.map((msg: any) => ({
+              _id: msg._id,
+              sender: msg.sender,
+              text: msg.text,
+              timestamp: new Date(msg.timestamp)
+            }));
+            setMessages(initialMessages);
+          }
+        } else {
+          Alert.alert('Error', 'Chat not found');
+          router.back();
         }
+      } else if (resortId && newChat === 'true') {
+        // New chat - create a placeholder chat object
+        const placeholderChat: Chat = {
+          _id: 'new-chat', // Temporary ID
+          customer_id: user!.id,
+          resort_id: resortId as string,
+          resort_name: (resortName as string) || 'Resort',
+          resort_image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400',
+          owner_name: 'Resort Owner',
+          last_message: 'Start a conversation',
+          last_message_time: new Date(),
+          unread_count: 0,
+          messages: []
+        };
+        
+        setChat(placeholderChat);
+        setMessages([]);
       } else {
-        Alert.alert('Error', 'Chat not found');
+        Alert.alert('Error', 'Chat information not provided');
         router.back();
       }
     } catch (error) {
@@ -132,25 +180,67 @@ export default function ChatConversation() {
     setIsSendingMessage(true);
 
     try {
-      // Send via API first
-      await chatService.sendMessage({
+      // Send via API first - this will create the chat if it doesn't exist
+      const sentMessage = await chatService.sendMessage({
         customer_id: user.id,
         resort_id: chat.resort_id,
         sender: 'customer',
         text: messageText,
       });
 
-      // Send via socket for real-time delivery
-      if (isConnected) {
-        customerChatSocket.sendMessage({
-          chatId: chatId as string,
-          text: messageText,
-        });
+      // Replace the temporary message with the real message from API
+      if (sentMessage && sentMessage.messages && sentMessage.messages.length > 0) {
+        const realMessage = sentMessage.messages[sentMessage.messages.length - 1];
+        setMessages(prev => prev.map(msg => 
+          msg._id === tempId ? {
+            _id: realMessage._id,
+            sender: realMessage.sender,
+            text: realMessage.text,
+            timestamp: new Date(realMessage.timestamp),
+          } : msg
+        ));
       }
 
-      // Add message to local state immediately for better UX
+      // If this was a new chat, update our local state with the real chat ID
+      if (chat._id === 'new-chat' && sentMessage._id) {
+        const realChatId = sentMessage._id;
+        
+        setChat(prevChat => prevChat ? {
+          ...prevChat,
+          _id: realChatId
+        } : null);
+        
+        // Join the real chat room via WebSocket
+        if (isConnected) {
+          try {
+            customerChatSocket.joinChat(realChatId); // Join real chat room
+            console.log('Joined real chat room:', realChatId);
+          } catch (error) {
+            console.error('Error joining chat room:', error);
+          }
+        }
+        
+        // Note: We don't update the URL to avoid screen reload
+        // The chat functionality will work with the updated local state
+      }
+
+      // Send via socket for real-time delivery (for other users)
+      if (isConnected) {
+        const realChatId = chat._id !== 'new-chat' ? chat._id : sentMessage._id;
+        if (realChatId && realChatId !== 'new-chat') {
+          customerChatSocket.sendMessage({
+            chatId: realChatId,
+            text: messageText,
+            customer_id: user.id,
+            resort_id: chat.resort_id,
+          });
+        }
+      }
+
+      // Add message to local state immediately for better UX (optimistic update)
+      const tempId = `temp_${Date.now()}_${Math.random()}`;
       const newMsg: ChatMessage = {
-        _id: Date.now().toString(),
+        _id: tempId,
         sender: 'customer',
         text: messageText,
         timestamp: new Date(),

@@ -4,8 +4,8 @@ import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, Phone, MoreVertical, Wifi, WifiOff } from 'lucide-react-native';
-import { OwnerChat, OwnerChatMessage } from '../../data/owner-chat-data';
-import { ownerChatSocket } from '../../lib/owner-chat-socket';
+import { OwnerChat } from '../../data/owner-chat-data';
+import { ownerChatSocket, ChatMessage } from '../../lib/chat-socket';
 import { chatService } from '../../services/chatService';
 
 export default function OwnerChatConversation() {
@@ -31,7 +31,7 @@ export default function OwnerChatConversation() {
       // Load chat data
       await loadChat();
       
-      // Connect to socket if not already connected
+      // Connect to socket if not already connected (auto-detects owner role)
       const connected = ownerChatSocket.connected || await ownerChatSocket.connect();
       setSocketConnected(connected);
 
@@ -83,24 +83,8 @@ export default function OwnerChatConversation() {
     // Listen for new messages
     const unsubscribeMessage = ownerChatSocket.onMessage((newMessage) => {
       if (newMessage.chatId === chatId) {
-        // Don't add our own messages since we already have them from optimistic update
-        if (newMessage.senderId === ownerChatSocket.userId) {
-          // Just update the temp message with the real ID from server
-          setCurrentChat(prevChat => {
-            if (!prevChat) return null;
-            return {
-              ...prevChat,
-              messages: prevChat.messages.map(msg => 
-                msg._id.startsWith('temp_') && msg.text === newMessage.text
-                  ? { ...newMessage, timestamp: new Date(newMessage.timestamp) }
-                  : msg
-              ),
-              last_message: newMessage.text,
-              last_message_time: new Date(newMessage.timestamp)
-            };
-          });
-        } else {
-          // Add messages from other users
+        // Only add messages from other users (not our own messages)
+        if (newMessage.senderId !== ownerChatSocket.userId) {
           setCurrentChat(prevChat => {
             if (!prevChat) return null;
             return {
@@ -110,12 +94,12 @@ export default function OwnerChatConversation() {
               last_message_time: new Date(newMessage.timestamp)
             };
           });
-        }
 
-        // Auto scroll to bottom
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+          // Auto scroll to bottom
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
       }
     });
 
@@ -128,19 +112,6 @@ export default function OwnerChatConversation() {
     const unsubscribeChatStatus = ownerChatSocket.onChatStatus((status) => {
       if (status.chatId === chatId) {
         setIsOtherUserOnline(status.isOtherUserOnline);
-      }
-    });
-
-    // Listen for user joining/leaving
-    const unsubscribeUserJoined = ownerChatSocket.onUserJoined((data) => {
-      if (data.chatId === chatId) {
-        setIsOtherUserOnline(true);
-      }
-    });
-
-    const unsubscribeUserLeft = ownerChatSocket.onUserLeft((data) => {
-      if (data.chatId === chatId) {
-        setIsOtherUserOnline(false);
       }
     });
 
@@ -177,8 +148,6 @@ export default function OwnerChatConversation() {
       unsubscribeMessage();
       unsubscribeConnection();
       unsubscribeChatStatus();
-      unsubscribeUserJoined();
-      unsubscribeUserLeft();
       unsubscribeMessageSent();
       unsubscribeError();
     };
@@ -199,11 +168,13 @@ export default function OwnerChatConversation() {
   const handleSendMessage = async () => {
     if (message.trim() && currentChat && chatId) {
       const messageText = message.trim();
-      const tempMessage: OwnerChatMessage = {
-        _id: `temp_${Date.now()}`,
+      const tempId = `temp_${Date.now()}_${Math.random()}`;
+      const tempMessage: ChatMessage = {
+        _id: tempId,
         sender: 'owner',
         text: messageText,
         timestamp: new Date(),
+        chatId: chatId as string,
       };
       
       // Optimistically update UI
@@ -227,16 +198,38 @@ export default function OwnerChatConversation() {
       try {
         if (socketConnected) {
           // Send via socket (primary method)
-          ownerChatSocket.sendMessage(chatId as string, messageText);
+          ownerChatSocket.sendMessage({
+            chatId: chatId as string,
+            text: messageText
+          });
         } else {
           // Fallback to REST API
           console.log('Socket not connected, using REST API fallback');
-          await chatService.sendMessage({
+          const sentMessage = await chatService.sendMessage({
             customer_id: currentChat.customer_id,
             resort_id: currentChat.resort_id,
             sender: 'owner',
             text: messageText
           });
+
+          // Replace temporary message with real message from API
+          if (sentMessage && sentMessage.messages && sentMessage.messages.length > 0) {
+            const realMessage = sentMessage.messages[sentMessage.messages.length - 1];
+            setCurrentChat(prevChat => {
+              if (!prevChat) return null;
+              return {
+                ...prevChat,
+                messages: prevChat.messages.map(msg => 
+                  msg._id === tempId ? {
+                    ...msg,
+                    _id: realMessage._id,
+                    timestamp: new Date(realMessage.timestamp)
+                  } : msg
+                )
+              };
+            });
+          }
+          
           console.log('Message sent via REST API');
         }
       } catch (error) {
@@ -289,7 +282,7 @@ export default function OwnerChatConversation() {
     }
   };
 
-  const renderMessage = (msg: OwnerChatMessage, index: number) => {
+  const renderMessage = (msg: ChatMessage, index: number) => {
     const isOwner = msg.sender === 'owner';
     const prevMessage = index > 0 ? currentChat!.messages[index - 1] : null;
     const nextMessage = index < currentChat!.messages.length - 1 ? currentChat!.messages[index + 1] : null;

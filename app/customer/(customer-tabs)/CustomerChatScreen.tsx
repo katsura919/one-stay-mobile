@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { MessageCircle, Search } from 'lucide-react-native';
 import { Chat } from '../../../data/chat-data';
-import { customerChatSocket, CustomerChatMessage } from '../../../lib/customer-chat-socket';
+import { customerChatSocket, ChatMessage, ChatUpdateData } from '../../../lib/chat-socket';
 import { chatService } from '../../../services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -26,8 +26,8 @@ export default function ChatScreen() {
 
   const initializeChat = async () => {
     try {
-      // Connect to socket
-      const connected = await customerChatSocket.connect(user?.id);
+      // Connect to socket as customer
+      const connected = await customerChatSocket.connect(user?.id, 'customer');
       setSocketConnected(connected);
       
       if (!connected) {
@@ -61,8 +61,14 @@ export default function ChatScreen() {
 
   const setupSocketListeners = () => {
     // Listen for new messages
-    customerChatSocket.onMessage((message: CustomerChatMessage) => {
+    customerChatSocket.onMessage((message: ChatMessage) => {
       updateChatWithNewMessage(message);
+    });
+
+    // Listen for chat updates (real-time chat list updates)
+    customerChatSocket.onChatUpdate((update: ChatUpdateData) => {
+      console.log('[CustomerChatScreen] Received chat_updated event:', update);
+      handleChatUpdate(update);
     });
 
     // Listen for connection changes
@@ -88,9 +94,15 @@ export default function ChatScreen() {
       console.log('API chats response:', apiChats);
       
       const transformedChats = apiChats.map(chat => transformApiChatForCustomer(chat));
-      console.log('Transformed chats:', transformedChats);
       
-      setChats(transformedChats);
+      // Sort chats by latest message time (most recent first)
+      const sortedChats = transformedChats.sort((a, b) => {
+        return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+      });
+      
+      console.log('Transformed and sorted chats:', sortedChats);
+      
+      setChats(sortedChats);
       
     } catch (error) {
       console.error('Error loading chats:', error);
@@ -129,12 +141,21 @@ export default function ChatScreen() {
 
   const calculateUnreadCount = (messages: any[]): number => {
     // For customer, count unread messages from owner
-    return messages.filter(msg => msg.sender === 'owner').length;
+    // In a real implementation, you'd track read status per message
+    // For now, we'll consider all owner messages as potentially unread
+    const ownerMessages = messages.filter(msg => msg.sender === 'owner');
+    
+    // If there are no messages, return 0
+    if (messages.length === 0) return 0;
+    
+    // If the last message is from the owner, consider it unread
+    const lastMessage = messages[messages.length - 1];
+    return lastMessage.sender === 'owner' ? ownerMessages.length : 0;
   };
 
-  const updateChatWithNewMessage = (message: CustomerChatMessage) => {
+  const updateChatWithNewMessage = (message: ChatMessage) => {
     setChats(prevChats => {
-      return prevChats.map(chat => {
+      const updatedChats = prevChats.map(chat => {
         if (chat._id === message.chatId) {
           const updatedMessages = [...chat.messages, {
             _id: message._id,
@@ -152,6 +173,51 @@ export default function ChatScreen() {
         }
         return chat;
       });
+      
+      // Re-sort chats after adding new message to keep most recent at top
+      return updatedChats.sort((a, b) => {
+        return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+      });
+    });
+  };
+
+  const handleChatUpdate = (update: ChatUpdateData) => {
+    console.log('Received chat update:', update);
+    
+    setChats(prevChats => {
+      let updatedChats = [...prevChats];
+      
+      if (update.isNewChat) {
+        // This is a new chat, we need to reload the full chat list
+        console.log('New chat detected, reloading chat list...');
+        loadChats();
+        return prevChats; // Return current state, loadChats will update it
+      } else {
+        // Update existing chat
+        const existingChatIndex = updatedChats.findIndex(chat => chat._id === update.chatId);
+        
+        if (existingChatIndex >= 0) {
+          // Update existing chat
+          updatedChats[existingChatIndex] = {
+            ...updatedChats[existingChatIndex],
+            last_message: update.lastMessage,
+            last_message_time: update.lastMessageTime,
+            unread_count: update.sender === 'owner' ? 
+              updatedChats[existingChatIndex].unread_count + 1 : 
+              updatedChats[existingChatIndex].unread_count
+          };
+        } else {
+          // Chat not found locally, reload the full list
+          console.log('Chat not found locally, reloading chat list...');
+          loadChats();
+          return prevChats;
+        }
+        
+        // Re-sort chats after update to keep most recent at top
+        return updatedChats.sort((a, b) => {
+          return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+        });
+      }
     });
   };
 
@@ -159,11 +225,16 @@ export default function ChatScreen() {
     // Mark chat as read when opening
     if (chat.unread_count > 0) {
       customerChatSocket.markAsRead(chat._id);
-      setChats(prevChats => 
-        prevChats.map(c => 
+      setChats(prevChats => {
+        const updatedChats = prevChats.map(c => 
           c._id === chat._id ? { ...c, unread_count: 0 } : c
-        )
-      );
+        );
+        
+        // Re-sort chats after marking as read (unread chats will move down)
+        return updatedChats.sort((a, b) => {
+          return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+        });
+      });
     }
 
     router.push({
@@ -174,10 +245,14 @@ export default function ChatScreen() {
 
   const formatTime = (date: Date) => {
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     
-    if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
       return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
     } else if (diffInHours < 24) {
       return date.toLocaleTimeString('en-US', { 
         hour: 'numeric', 
@@ -198,13 +273,17 @@ export default function ChatScreen() {
     <TouchableOpacity
       key={chat._id}
       onPress={() => handleChatPress(chat)}
-      className="flex-row items-center p-4 bg-white active:bg-gray-50"
+      className={`flex-row items-center p-4 active:bg-gray-50 ${
+        chat.unread_count > 0 ? 'bg-blue-50' : 'bg-white'
+      }`}
       style={{ 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 2,
         elevation: 1,
+        borderLeftWidth: chat.unread_count > 0 ? 3 : 0,
+        borderLeftColor: chat.unread_count > 0 ? '#3B82F6' : 'transparent',
       }}
     >
       <View className="relative">
@@ -224,20 +303,28 @@ export default function ChatScreen() {
       
       <View className="flex-1 ml-4">
         <View className="flex-row items-center justify-between mb-1">
-          <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
+          <Text 
+            className={`text-lg ${chat.unread_count > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-900'}`} 
+            numberOfLines={1}
+          >
             {chat.resort_name}
           </Text>
-          <Text className="text-sm text-gray-500 font-medium">
+          <Text 
+            className={`text-sm ${chat.unread_count > 0 ? 'font-bold text-gray-900' : 'font-medium text-gray-500'}`}
+          >
             {formatTime(chat.last_message_time)}
           </Text>
         </View>
         
-        <Text className="text-sm text-gray-600 mb-2" numberOfLines={1}>
+        <Text 
+          className={`text-sm mb-2 ${chat.unread_count > 0 ? 'font-semibold text-gray-700' : 'text-gray-600'}`} 
+          numberOfLines={1}
+        >
           {chat.owner_name}
         </Text>
         
         <Text 
-          className={`text-sm leading-5 ${chat.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}
+          className={`text-sm leading-5 ${chat.unread_count > 0 ? 'text-gray-900 font-bold' : 'text-gray-500'}`}
           numberOfLines={2}
         >
           {chat.last_message}
