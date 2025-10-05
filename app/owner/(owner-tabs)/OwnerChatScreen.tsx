@@ -258,7 +258,7 @@ export default function ChatScreen() {
     <TouchableOpacity
       key={chat._id}
       onPress={() => handleChatPress(chat)}
-      className="flex-row items-center p-4 bg-white active:bg-gray-50"
+      className="p-4 bg-white active:bg-gray-50"
       style={{ 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
@@ -267,54 +267,31 @@ export default function ChatScreen() {
         elevation: 1,
       }}
     >
-      <View className="relative">
-        <Image
-          source={{ uri: chat.customer_avatar }}
-          className="w-16 h-16 rounded-2xl"
-          style={{ backgroundColor: '#f3f4f6' }}
-        />
-        <View className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${getStatusColor(chat.status)} border-2 border-white`} />
-        {chat.unread_count > 0 && (
-          <View className="absolute -top-2 -right-2 bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center px-1">
-            <Text className="text-white text-xs font-bold">
-              {chat.unread_count > 99 ? '99+' : chat.unread_count}
-            </Text>
-          </View>
-        )}
-      </View>
-      
-      <View className="flex-1 ml-4">
-        <View className="flex-row items-center justify-between mb-1">
-          <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
-            {chat.customer_name}
-          </Text>
-          <Text className="text-sm text-gray-500 font-medium">
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="text-lg text-gray-900" numberOfLines={1} style={{ fontFamily: 'Roboto-Bold' }}>
+          {chat.customer_name}
+        </Text>
+        <View className="flex-row items-center">
+          {chat.unread_count > 0 && (
+            <View className="bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center px-1 mr-2">
+              <Text className="text-white text-xs" style={{ fontFamily: 'Roboto-Bold' }}>
+                {chat.unread_count > 99 ? '99+' : chat.unread_count}
+              </Text>
+            </View>
+          )}
+          <Text className="text-sm text-gray-500" style={{ fontFamily: 'Roboto-Medium' }}>
             {formatTime(chat.last_message_time)}
           </Text>
         </View>
-        
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center">
-            {chat.booking_id && (
-              <Text className="text-xs text-gray-500 mr-2">
-                #{chat.booking_id}
-              </Text>
-            )}
-            <View className={`px-2 py-0.5 rounded-full ${getStatusColor(chat.status)}`}>
-              <Text className="text-xs text-white font-medium">
-                {getStatusText(chat.status)}
-              </Text>
-            </View>
-          </View>
-        </View>
-        
-        <Text 
-          className={`text-sm leading-5 ${chat.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}
-          numberOfLines={2}
-        >
-          {chat.last_message}
-        </Text>
       </View>
+       
+      <Text 
+        className={`text-sm leading-5 ${chat.unread_count > 0 ? 'text-gray-900' : 'text-gray-500'}`}
+        numberOfLines={2}
+        style={{ fontFamily: chat.unread_count > 0 ? 'Roboto-Medium' : 'Roboto' }}
+      >
+        {chat.last_message}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -333,45 +310,17 @@ export default function ChatScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View 
-        className="px-4 py-4 bg-white"
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 4,
-        }}
-      >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Text className="text-2xl font-bold text-gray-900">Messages</Text>
-            {__DEV__ && (
-              <View className="ml-3 bg-blue-100 px-2 py-1 rounded-full">
-                <Text className="text-xs text-blue-600">API Mode</Text>
-              </View>
-            )}
-          </View>
-          <View className="flex-row items-center">
-            {!socketConnected && (
-              <View className="mr-3 bg-red-100 px-2 py-1 rounded-full">
-                <Text className="text-xs text-red-600">Offline</Text>
-              </View>
-            )}
-            <TouchableOpacity className="p-2 rounded-full bg-gray-100">
-              <Search size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-        </View>
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <View className="px-6 ">
+        <Text className="text-xl text-center py-3 text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
+          Messages
+        </Text>
       </View>
-
       {/* Loading State */}
       {(loading || resortsLoading) ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" />
-          <Text className="mt-4 text-gray-600">
+          <Text className="mt-4 text-gray-600" style={{ fontFamily: 'Roboto' }}>
             {resortsLoading ? 'Loading resort data...' : 'Loading chats...'}
           </Text>
         </View>
@@ -406,10 +355,10 @@ export default function ChatScreen() {
             <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
               <MessageCircle size={32} color="#9CA3AF" />
             </View>
-            <Text className="text-xl font-semibold text-gray-900 mb-2 text-center">
+            <Text className="text-xl text-gray-900 mb-2 text-center" style={{ fontFamily: 'Roboto-Bold' }}>
               {!hasResorts ? 'No Resort Found' : 'No guest messages'}
             </Text>
-            <Text className="text-gray-500 text-center leading-5">
+            <Text className="text-gray-500 text-center leading-5" style={{ fontFamily: 'Roboto' }}>
               {!hasResorts 
                 ? 'Create a resort first to receive messages from guests' 
                 : 'When guests book your resort, their conversations will appear here'

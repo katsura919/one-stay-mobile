@@ -358,7 +358,7 @@ export default function ResortScreen() {
   }
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <SafeAreaView className="flex-1 h-[100v] bg-gray-100">
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <ScrollView 
           showsVerticalScrollIndicator={false}

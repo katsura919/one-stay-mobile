@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, XCircle, Star, Bed, Wifi, Car, Coffee, Shield } from 'lucide-react-native';
+import { ChevronLeft, Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, XCircle, Star, Bed, Wifi, Car, Coffee, Shield } from 'lucide-react-native';
 import { Card, Chip, Avatar, Divider } from 'react-native-paper';
 import { reservationAPI, Reservation, feedbackAPI } from '@/services/reservationService';
 
@@ -200,65 +200,37 @@ export default function BookingDetailsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="bg-white px-6 py-4 border-b border-gray-100">
+      <View className="bg-white px-6 py-2  border-gray-100">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
+            className="w-10 h-10  rounded-full items-center justify-center"
           >
-            <ArrowLeft size={20} color="#374151" />
+            <ChevronLeft size={20} color="#374151" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold font-inter text-gray-900">Booking Details</Text>
+          <Text className="text-xl text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>Booking Details</Text>
           <View className="w-10" />
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* Status Card */}
-        <View className="px-6 pt-6">
-          <Card className="mb-6" style={{ borderRadius: 16, elevation: 2 }}>
-            <Card.Content className="p-6">
-              <View className="items-center">
-                <View className={`w-16 h-16 rounded-full items-center justify-center mb-4`} 
-                      style={{ backgroundColor: `${getStatusColor(reservation.status)}20` }}>
-                  {reservation.status === 'approved' ? (
-                    <CheckCircle size={32} color={getStatusColor(reservation.status)} />
-                  ) : reservation.status === 'rejected' || reservation.status === 'cancelled' ? (
-                    <XCircle size={32} color={getStatusColor(reservation.status)} />
-                  ) : reservation.status === 'completed' ? (
-                    <Star size={32} color={getStatusColor(reservation.status)} />
-                  ) : (
-                    <Clock size={32} color={getStatusColor(reservation.status)} />
-                  )}
-                </View>
-                <Text className="text-2xl font-bold font-inter text-gray-900 mb-2">
-                  ${reservation.total_price}
-                </Text>
-                <Chip
-                  mode="flat"
-                  style={{ backgroundColor: getStatusColor(reservation.status) }}
-                  textStyle={{ color: 'white', fontSize: 14, fontFamily: 'Inter', fontWeight: '600' }}
-                >
-                  {reservation.status.toUpperCase()}
-                </Chip>
-              </View>
-            </Card.Content>
-          </Card>
-        </View>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-gray-100">
+        
 
         {/* Guest Information */}
-        <View className="px-6 mb-6">
-          <Card style={{ borderRadius: 16, elevation: 1 }}>
-            <Card.Content className="p-6">
-              <Text className="text-lg font-bold font-inter text-gray-900 mb-4">Guest Information</Text>
+        <View className="px-6 mt-6 mb-6">
+          <Card className="shadow-none border " style={{ 
+            borderRadius: 10,
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
+          }}>
+            <Card.Content className="p-4 bg-white rounded-xl">
+              <Text className="text-lg text-gray-900 mb-4" style={{ fontFamily: 'Roboto-Bold' }}>Guest Information</Text>
               <View className="flex-row items-center mb-4">
-                <Avatar.Text size={48} label={userInfo?.username?.[0]?.toUpperCase() || 'G'} 
-                           style={{ backgroundColor: '#1F2937' }} />
-                <View className="ml-4 flex-1">
-                  <Text className="text-base font-semibold font-inter text-gray-900">
+                <View className="flex-1">
+                  <Text className="text-base text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
                     {userInfo?.username || 'Guest'}
                   </Text>
-                  <Text className="text-sm text-gray-600 font-inter mt-1">
+                  <Text className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'Roboto' }}>
                     {userInfo?.email || 'No email provided'}
                   </Text>
                 </View>
@@ -269,9 +241,9 @@ export default function BookingDetailsScreen() {
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <Calendar size={16} color="#6B7280" />
-                  <Text className="ml-2 text-sm text-gray-600 font-inter">Booked on</Text>
+                  <Text className="ml-2 text-sm text-gray-600" style={{ fontFamily: 'Roboto-Medium' }}>Booked on</Text>
                 </View>
-                <Text className="text-sm font-medium text-gray-900 font-inter">
+                <Text className="text-sm text-gray-900" style={{ fontFamily: 'Roboto-Medium' }}>
                   {formatTime(reservation.createdAt)}
                 </Text>
               </View>
@@ -281,58 +253,60 @@ export default function BookingDetailsScreen() {
 
         {/* Booking Details */}
         <View className="px-6 mb-6">
-          <Card style={{ borderRadius: 16, elevation: 1 }}>
-            <Card.Content className="p-6">
-              <Text className="text-lg font-bold font-inter text-gray-900 mb-4">Booking Details</Text>
+          <Card className="shadow-none border" style={{ 
+            borderRadius: 10,
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
+          }}>
+            <Card.Content className="p-4 bg-white rounded-xl">
+              <Text className="text-lg text-gray-900 mb-4" style={{ fontFamily: 'Roboto-Bold' }}>Booking Details</Text>
               
               {/* Resort & Room */}
               <View className="mb-4">
                 <View className="flex-row items-center mb-2">
                   <MapPin size={16} color="#6B7280" />
-                  <Text className="ml-2 text-sm text-gray-600 font-inter">Resort</Text>
+                  <Text className="ml-2 text-sm text-gray-600" style={{ fontFamily: 'Roboto-Medium' }}>Resort</Text>
                 </View>
-                <Text className="text-base font-medium text-gray-900 font-inter ml-6">
+                <Text className="text-base text-gray-900 ml-6" style={{ fontFamily: 'Roboto-Medium' }}>
                   {resortInfo?.resort_name || 'Resort Name'}
                 </Text>
-                <Text className="text-sm text-gray-600 font-inter ml-6 mt-1">
+                <Text className="text-sm text-gray-600 ml-6 mt-1" style={{ fontFamily: 'Roboto' }}>
                   {roomInfo?.room_type || 'Room Type'}
                 </Text>
               </View>
 
               <Divider className="my-4" />
 
-              {/* Check-in */}
-              <View className="flex-row items-center justify-between mb-3">
-                <View className="flex-1">
-                  <Text className="text-sm text-gray-600 font-inter mb-1">Check-in</Text>
-                  <Text className="text-base font-medium text-gray-900 font-inter">
-                    {formatDate(reservation.start_date)}
+              {/* Check-in & Check-out in horizontal layout */}
+              <View className="flex-row justify-between items-center mb-4">
+                <View>
+                  <Text className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'Roboto-Medium' }}>Check-in</Text>
+                  <Text className="text-sm text-gray-900" style={{ fontFamily: 'Roboto-Medium' }}>
+                    {formatTime(reservation.start_date)}
                   </Text>
                 </View>
-                <View className="flex-1">
-                  <Text className="text-sm text-gray-600 font-inter mb-1">Check-out</Text>
-                  <Text className="text-base font-medium text-gray-900 font-inter">
-                    {formatDate(reservation.end_date)}
+                <View className="items-center">
+                  <Text className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'Roboto-Medium' }}>Duration</Text>
+                  <Text className="text-sm text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
+                    {Math.ceil((new Date(reservation.end_date).getTime() - new Date(reservation.start_date).getTime()) / (1000 * 60 * 60 * 24))} days
+                  </Text>
+                </View>
+                <View className="items-end">
+                  <Text className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'Roboto-Medium' }}>Check-out</Text>
+                  <Text className="text-sm text-gray-900" style={{ fontFamily: 'Roboto-Medium' }}>
+                    {formatTime(reservation.end_date)}
                   </Text>
                 </View>
               </View>
 
               <Divider className="my-4" />
 
-              {/* Duration & Price */}
+              {/* Total Amount */}
               <View className="flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm text-gray-600 font-inter">Total Duration</Text>
-                  <Text className="text-base font-medium text-gray-900 font-inter">
-                    {Math.ceil((new Date(reservation.end_date).getTime() - new Date(reservation.start_date).getTime()) / (1000 * 60 * 60 * 24))} nights
-                  </Text>
-                </View>
-                <View className="items-end">
-                  <Text className="text-sm text-gray-600 font-inter">Total Amount</Text>
-                  <Text className="text-xl font-bold text-gray-900 font-inter">
-                    ${reservation.total_price}
-                  </Text>
-                </View>
+                <Text className="text-sm text-gray-600" style={{ fontFamily: 'Roboto-Medium' }}>Total Amount</Text>
+                <Text className="text-xl text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
+                  ₱{reservation.total_price}
+                </Text>
               </View>
             </Card.Content>
           </Card>
@@ -357,7 +331,7 @@ export default function BookingDetailsScreen() {
                     ) : (
                       <XCircle color="white" size={20} />
                     )}
-                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                    <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                       Reject
                     </Text>
                   </View>
@@ -377,7 +351,7 @@ export default function BookingDetailsScreen() {
                     ) : (
                       <CheckCircle color="white" size={20} />
                     )}
-                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                    <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                       Approve
                     </Text>
                   </View>
@@ -398,7 +372,7 @@ export default function BookingDetailsScreen() {
                   ) : (
                     <XCircle color="white" size={20} />
                   )}
-                  <Text className="text-white font-bold font-inter ml-2 text-base">
+                  <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                     Cancel Booking
                   </Text>
                 </View>
@@ -422,7 +396,7 @@ export default function BookingDetailsScreen() {
                   ) : (
                     <CheckCircle color="white" size={20} />
                   )}
-                  <Text className="text-white font-bold font-inter ml-2 text-base">
+                  <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                     Mark as Completed
                   </Text>
                 </View>
@@ -442,7 +416,7 @@ export default function BookingDetailsScreen() {
                   ) : (
                     <XCircle color="white" size={20} />
                   )}
-                  <Text className="text-white font-bold font-inter ml-2 text-base">
+                  <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                     Cancel Booking
                   </Text>
                 </View>
@@ -460,7 +434,7 @@ export default function BookingDetailsScreen() {
                 >
                   <View className="flex-row items-center justify-center">
                     <Star color="white" size={20} />
-                    <Text className="text-white font-bold font-inter ml-2 text-base">
+                    <Text className="text-white text-base ml-2" style={{ fontFamily: 'Roboto-Bold' }}>
                       Rate Customer
                     </Text>
                   </View>
@@ -469,7 +443,7 @@ export default function BookingDetailsScreen() {
               
               {!loadingFeedback && feedbackEligibility && feedbackEligibility.alreadySubmitted && (
                 <View className="py-4 px-6 rounded-2xl bg-green-100 border border-green-300">
-                  <Text className="text-green-800 font-semibold font-inter text-center">
+                  <Text className="text-green-800 text-center" style={{ fontFamily: 'Roboto-Bold' }}>
                     ✓ You have already rated this customer
                   </Text>
                 </View>
@@ -477,7 +451,7 @@ export default function BookingDetailsScreen() {
               
               {feedbackEligibility?.mutualFeedback?.bothCompleted && (
                 <View className="py-3 px-6 rounded-2xl bg-purple-100 border border-purple-300">
-                  <Text className="text-purple-800 font-medium font-inter text-center text-sm">
+                  <Text className="text-purple-800 text-center text-sm" style={{ fontFamily: 'Roboto-Medium' }}>
                     🤝 Mutual feedback completed! Both parties have rated each other.
                   </Text>
                 </View>
@@ -486,8 +460,8 @@ export default function BookingDetailsScreen() {
           )}
 
           {(reservation.status === 'rejected' || reservation.status === 'cancelled') && (
-            <View className="py-4 px-6 rounded-2xl bg-gray-100 border border-gray-300">
-              <Text className="text-gray-600 font-medium font-inter text-center">
+            <View className="py-4 px-6 rounded-2xl bg-white border border-gray-300">
+              <Text className="text-gray-600 text-center" style={{ fontFamily: 'Roboto-Medium' }}>
                 This reservation has been {reservation.status}.
               </Text>
             </View>

@@ -139,9 +139,7 @@ export default function BookingsScreen() {
       >
         {/* Header */}
         <View className="px-6 pb-6 ">
-          <Text className="text-lg text-center p-2 text-gray-600" style={{ fontFamily: 'Roboto-Bold' }}>
-            Reservations
-          </Text>
+         <Text className="text-xl text-center py-3 text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>Reservation Details</Text>
 
           {/* Search Input */}
           <View className="pb-4">
@@ -254,7 +252,7 @@ export default function BookingsScreen() {
                     borderColor: '#E5E7EB',
                     borderWidth: 1,
                   }}>
-                    <Card.Content className="p-4">
+                    <Card.Content className="p-4 bg-white rounded-xl">
                       {/* Header: Customer Name and Status */}
                       <View className="flex-row items-center justify-between mb-3">
                         <Text style={{ fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', fontSize: 16 }}>
