@@ -311,7 +311,7 @@ export default function ChatScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="px-6 ">
+      <View className="px-6">
         <Text className="text-xl text-center py-3 text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
           Messages
         </Text>

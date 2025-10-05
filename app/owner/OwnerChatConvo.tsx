@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Keyboard, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Keyboard, StyleSheet, Alert, RefreshControl, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,6 +15,11 @@ export default function OwnerChatConversation() {
   const [currentChat, setCurrentChat] = useState<OwnerChat | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [totalMessages, setTotalMessages] = useState(0);
+  const [currentSkip, setCurrentSkip] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -28,6 +33,7 @@ export default function OwnerChatConversation() {
 
   const initializeChat = async () => {
     try {
+      setLoading(true);
       // Load chat data
       await loadChat();
       
@@ -52,6 +58,8 @@ export default function OwnerChatConversation() {
     } catch (error) {
       console.error('Error initializing chat:', error);
       Alert.alert('Error', 'Failed to load chat');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,6 +76,13 @@ export default function OwnerChatConversation() {
       
       setCurrentChat(transformedChat);
       
+      // Set pagination info if available
+      if ((apiChat as any).pagination) {
+        setTotalMessages((apiChat as any).pagination.totalMessages);
+        setHasMoreMessages((apiChat as any).pagination.hasMore);
+        setCurrentSkip(transformedChat.messages.length);
+      }
+      
     } catch (error) {
       console.error('Error loading chat:', error);
       
@@ -76,6 +91,51 @@ export default function OwnerChatConversation() {
       } else {
         Alert.alert('Error', 'Failed to load chat');
       }
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (!hasMoreMessages || loadingMore || !chatId || !currentChat) return;
+    
+    try {
+      setLoadingMore(true);
+      console.log('Loading more messages, skip:', currentSkip);
+      
+      const data = await chatService.loadMoreMessages(chatId as string, {
+        skip: currentSkip,
+        limit: 10
+      });
+      
+      console.log('Load more messages response:', data);
+      
+      if (data.messages && data.messages.length > 0) {
+        // Transform messages to match our format
+        const transformedMessages = data.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        
+        // Prepend older messages to the current chat
+        setCurrentChat(prevChat => {
+          if (!prevChat) return null;
+          return {
+            ...prevChat,
+            messages: [...transformedMessages, ...prevChat.messages]
+          };
+        });
+        
+        // Update pagination state
+        setCurrentSkip(prev => prev + data.messages.length);
+        setHasMoreMessages(data.pagination?.hasMore || false);
+      }
+      
+    } catch (error) {
+      console.error('Error loading more messages:', error);
+      if (__DEV__) {
+        Alert.alert('Error', `Failed to load more messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -320,13 +380,13 @@ export default function OwnerChatConversation() {
               elevation: 2,
             }}
           >
-            <Text className={`text-base leading-5 ${isOwner ? 'text-white' : 'text-gray-900'}`}>
+            <Text className={`text-base leading-5 ${isOwner ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Roboto' }}>
               {msg.text}
             </Text>
           </View>
           
           {showTime && (
-            <Text className="text-xs text-gray-500 mt-1 px-1">
+            <Text className="text-xs text-gray-500 mt-1 px-1" style={{ fontFamily: 'Roboto' }}>
               {formatMessageTime(msg.timestamp)}
             </Text>
           )}
@@ -337,10 +397,10 @@ export default function OwnerChatConversation() {
     );
   };
 
-  if (!currentChat) {
+  if (!currentChat && !loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center" style={{ paddingTop: insets.top }}>
-        <Text className="text-gray-500">Chat not found</Text>
+        <Text className="text-gray-500" style={{ fontFamily: 'Roboto' }}>Chat not found</Text>
       </View>
     );
   }
@@ -353,7 +413,7 @@ export default function OwnerChatConversation() {
     >
       {/* Header */}
       <View 
-        className="flex-row items-center justify-between px-4 py-3 bg-white"
+        className="flex-row items-center px-4 py-3 bg-white"
         style={{
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
@@ -362,70 +422,56 @@ export default function OwnerChatConversation() {
           elevation: 4,
         }}
       >
-          <View className="flex-row items-center flex-1">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="mr-3 p-2 -ml-2"
-            >
-              <ArrowLeft size={24} color="#374151" />
-            </TouchableOpacity>
-            
-            <Image
-              source={{ uri: currentChat.customer_avatar }}
-              className="w-10 h-10 rounded-full mr-3"
-            />
-            
-            <View className="flex-1">
-              <View className="flex-row items-center">
-                <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
-                  {currentChat.customer_name}
-                </Text>
-                {isOtherUserOnline && (
-                  <View className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
-                )}
-              </View>
-              <View className="flex-row items-center">
-                {currentChat.booking_id && (
-                  <Text className="text-xs text-gray-500 mr-2">
-                    #{currentChat.booking_id}
-                  </Text>
-                )}
-                <View className={`px-2 py-0.5 rounded-full ${getStatusColor(currentChat.status)}`}>
-                  <Text className="text-xs text-white font-medium">
-                    {getStatusText(currentChat.status).split(' ')[0]}
-                  </Text>
-                </View>
-                <View className="ml-2 flex-row items-center">
-                  {socketConnected ? (
-                    <Wifi size={12} color="#10B981" />
-                  ) : (
-                    <WifiOff size={12} color="#EF4444" />
-                  )}
-                </View>
-              </View>
-            </View>
-          </View>
-          
-          <View className="flex-row">
-            <TouchableOpacity className="p-2 mr-2">
-              <Phone size={20} color="#6B7280" />
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2">
-              <MoreVertical size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mr-3 p-2 -ml-2"
+        >
+          <ArrowLeft size={24} color="#374151" />
+        </TouchableOpacity>
+        
+        <Text className="text-lg text-gray-900 flex-1" numberOfLines={1} style={{ fontFamily: 'Roboto-Bold' }}>
+          {loading ? 'Loading...' : currentChat?.customer_name || 'Chat'}
+        </Text>
+      </View>
 
         {/* Messages */}
         <ScrollView
           ref={scrollViewRef}
-          className="flex-1 px-4 pt-4"
+          className="flex-1 px-4 py-4 bg-gray-100"
           style={{ backgroundColor: '#FAFAFA' }}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={loadingMore}
+              onRefresh={loadMoreMessages}
+              tintColor="#EF4444"
+              colors={["#EF4444"]}
+              progressBackgroundColor="#FFFFFF"
+            />
+          }
         >
-          {currentChat.messages.map(renderMessage)}
+          {/* Loading indicator for older messages */}
+          {loadingMore && (
+            <View className="py-4 items-center">
+              <ActivityIndicator size="small" color="#EF4444" />
+              <Text className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'Roboto' }}>
+                Loading older messages...
+              </Text>
+            </View>
+          )}
+          
+          {/* No more messages indicator */}
+          {!hasMoreMessages && currentChat && currentChat.messages && currentChat.messages.length > 0 && (
+            <View className="py-4 items-center">
+              <Text className="text-xs text-gray-400" style={{ fontFamily: 'Roboto' }}>
+                No more messages
+              </Text>
+            </View>
+          )}
+          
+          {currentChat && currentChat.messages && currentChat.messages.map(renderMessage)}
         </ScrollView>
 
         {/* Message Input */}
@@ -486,7 +532,7 @@ export default function OwnerChatConversation() {
           {/* Connection Status Indicator */}
           {!socketConnected && (
             <View className="absolute -top-8 right-4 bg-red-500 px-2 py-1 rounded-full">
-              <Text className="text-xs text-white">Offline</Text>
+              <Text className="text-xs text-white" style={{ fontFamily: 'Roboto-Medium' }}>Offline</Text>
             </View>
           )}
         </View>
@@ -499,6 +545,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
   },
   input: {
     borderWidth: 1,
