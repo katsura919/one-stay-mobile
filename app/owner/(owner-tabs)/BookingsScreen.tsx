@@ -139,7 +139,7 @@ export default function BookingsScreen() {
       >
         {/* Header */}
         <View className="px-6 pb-6 ">
-         <Text className="text-xl text-center py-3 text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>Reservation Details</Text>
+         <Text className="text-xl text-center py-3 text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>Reservations</Text>
 
           {/* Search Input */}
           <View className="pb-4">

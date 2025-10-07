@@ -42,6 +42,7 @@ import ResortScreenMaps from '../../../components/resort-screen/resort-screen-ma
 import WebMapLocationPicker from '../../../components/WebMapLocationPicker';
 import { resortAPI, ResortFormData } from '../../../services/resortService';
 import { amenityAPI, Amenity } from '../../../services/amenityService';
+import { statsAPI, ResortStats } from '../../../services/statsService';
 
 interface Location {
   latitude: number;
@@ -59,6 +60,7 @@ export default function ResortScreen() {
   const [resortAmenities, setResortAmenities] = useState<{ [key: string]: Amenity[] }>({});
   const [newAmenityName, setNewAmenityName] = useState('');
   const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
+  const [resortStats, setResortStats] = useState<{ [key: string]: ResortStats }>({});
   
   const { resorts, loading: resortsLoading, error, refreshResorts } = useResort();
   
@@ -92,6 +94,12 @@ export default function ResortScreen() {
       
       // Reload user data
       await loadUserData();
+      
+      // Reload stats for all resorts
+      setResortStats({}); // Clear existing stats
+      resorts.forEach(resort => {
+        loadResortStats(resort._id);
+      });
       
       // Optional: Show a brief success message
       // You can uncomment the line below if you want feedback
@@ -190,6 +198,10 @@ export default function ResortScreen() {
 
       await resortAPI.updateResort(editingResortId, updateData, token);
       await refreshResorts();
+      
+      // Reload stats for the updated resort
+      await loadResortStats(editingResortId);
+      
       closeEditModal();
       Alert.alert('Success', 'Resort updated successfully!');
     } catch (error) {
@@ -304,11 +316,39 @@ export default function ResortScreen() {
     );
   };
 
-  // Load amenities for all resorts when they're available
+  // Load stats for a resort
+  const loadResortStats = async (resortId: string) => {
+    try {
+      if (resortStats[resortId]) return; // Already loaded
+      
+      const stats = await statsAPI.getResortStats(resortId);
+      setResortStats(prev => ({
+        ...prev,
+        [resortId]: stats
+      }));
+    } catch (error) {
+      console.error('Error loading resort stats:', error);
+      // Set default stats on error
+      setResortStats(prev => ({
+        ...prev,
+        [resortId]: {
+          resortId,
+          averageRating: 0,
+          totalRooms: 0,
+          totalReservations: 0,
+          totalFeedbacks: 0,
+          ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        }
+      }));
+    }
+  };
+
+  // Load amenities and stats for all resorts when they're available
   useEffect(() => {
     if (resorts.length > 0) {
       resorts.forEach(resort => {
         loadAmenities(resort._id);
+        loadResortStats(resort._id);
       });
     }
   }, [resorts]);
@@ -358,7 +398,7 @@ export default function ResortScreen() {
   }
 
     return (
-      <SafeAreaView className="flex-1 h-[100v] bg-gray-100">
+      <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <ScrollView 
           showsVerticalScrollIndicator={false}
@@ -374,9 +414,9 @@ export default function ResortScreen() {
           {/* Property Cards */}
           <View>
             {resorts.map((resort) => (
-              <View key={resort._id} className="mb-8">
+              <View key={resort._id} className="mb-6">
                 {/* Edit Controls - Always visible */}
-                <View className="absolute top-3 right-3 z-10 flex-row gap-2">
+                <View className="absolute top-2.5 right-2.5 z-10 flex-row gap-1.5">
                   {/* Quick Image Update */}
                   <TouchableOpacity 
                     onPress={async () => {
@@ -404,7 +444,7 @@ export default function ResortScreen() {
                         setLoading(false);
                       }
                     }}
-                    className="bg-white/90 rounded-2xl p-2"
+                    className="bg-white/95 rounded-xl p-1.5 shadow-sm"
                   >
                     <Camera size={16} color="#1F2937" />
                   </TouchableOpacity>
@@ -412,7 +452,7 @@ export default function ResortScreen() {
                   {/* Full Edit */}
                   <TouchableOpacity 
                     onPress={() => openEditModal(resort)}
-                    className="bg-white/90 rounded-2xl p-2"
+                    className="bg-white/95 rounded-xl p-1.5 shadow-sm"
                   >
                     <Edit2 size={16} color="#1F2937" />
                   </TouchableOpacity>
@@ -423,45 +463,41 @@ export default function ResortScreen() {
                   {resort.image ? (
                     <Image 
                       source={{ uri: resort.image }} 
-                      style={{ width: '100%', height: 190 }}
+                      style={{ width: '100%', height: 220 }}
                       className="bg-gray-100"
                       resizeMode="cover"
                     />
                   ) : (
-                    <View style={{ width: '100%', height: 190 }} className="bg-gray-100 justify-center items-center">
+                    <View style={{ width: '100%', height: 220 }} className="bg-gray-100 justify-center items-center">
                       <Text style={{ fontSize: 16, color: '#6B7280', fontFamily: 'Roboto' }}>No Image</Text>
                     </View>
                   )}
                 </View>
                 
                 {/* Content Container with Rounded Top Corners */}
-                <View className="bg-white h-[100vh]  rounded-t-2xl px-6 pt-6  mx-0">
-                {/* Title with Edit Button */}
-                <View className="flex-row items-center justify-between">
-                  <Text style={{ fontSize: 20,fontFamily: 'Roboto-Bold', color: '#111827', textAlign: 'left', lineHeight: 28, flex: 1 }}>
+                <View className="bg-white rounded-t-3xl px-5 pt-5 mx-0 -mt-4">
+                {/* Title and Location */}
+                <View className="mb-3">
+                  <Text style={{ fontSize: 22, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 2 }}>
                     {resort.resort_name}
+                  </Text>
+                  <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280' }}>
+                    {resort.location.address?.split(',')[0] || 'Location'}
                   </Text>
                 </View>
                 
-                {/* Subtitle */}
-                <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'left', marginBottom: 2, lineHeight: 24 }}>
-                 {resort.location.address?.split(',')[0] || 'Location'}
-                </Text>
-                
-                {/* Description with Edit Button */}
+                {/* Description - Compact */}
                 <TouchableOpacity 
                   onPress={() => toggleDescriptionExpansion(resort._id)}
                   activeOpacity={0.7}
-                  className="mb-5"
+                  className="mb-4"
                 >
                   <Text 
                     style={{ 
-                      fontSize: 14, 
+                      fontSize: 13, 
                       fontFamily: 'Roboto', 
-                      color: '#374151', 
-                      textAlign: 'left', 
-                      lineHeight: 20, 
-                      paddingHorizontal: 0 
+                      color: '#6B7280', 
+                      lineHeight: 19
                     }} 
                     numberOfLines={expandedDescriptions[resort._id] ? undefined : 2}
                   >
@@ -469,127 +505,106 @@ export default function ResortScreen() {
                   </Text>
                   {!expandedDescriptions[resort._id] && (resort.description || 'A beautiful and comfortable place to stay with all the amenities you need for a perfect vacation.').length > 100 && (
                     <Text style={{ 
-                      fontSize: 12, 
+                      fontSize: 11, 
                       fontFamily: 'Roboto-Medium', 
-                      color: '#6B7280', 
-                      marginTop: 4 
+                      color: '#1F2937', 
+                      marginTop: 2
                     }}>
-                      Tap to read more...
+                      Show more
                     </Text>
                   )}
                 </TouchableOpacity>
                 
-                {/* Bottom Section - Rating, Rooms, Reservations, Reviews */}
-                <View className="flex-row justify-between items-center pt-4 border-t border-gray-200">
+                {/* Stats Section - Compact Grid */}
+                <View className="flex-row bg-gray-50 rounded-2xl p-3 mb-4">
                   {/* Rating */}
-                  <View className="items-center flex-1 px-1.5">
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
-                      5.0
-                    </Text>
-                    <View className="flex-row justify-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} size={12} color="#FFD700" fill="#FFD700" style={{ marginHorizontal: 1 }} />
-                      ))}
+                  <View className="items-center flex-1">
+                    <View className="flex-row items-center mb-1">
+                      <Star size={14} color="#FFD700" fill="#FFD700" style={{ marginRight: 3 }} />
+                      <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                        {resortStats[resort._id]?.averageRating?.toFixed(1) || '0.0'}
+                      </Text>
                     </View>
+                    <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>
+                      Rating
+                    </Text>
                   </View>
                   
                   {/* Separator */}
-                  <View className="w-px h-9 bg-gray-300" />
+                  <View className="w-px bg-gray-300" />
                   
                   {/* Total Rooms */}
-                  <View className="items-center flex-1 px-1.5">
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
-                      0
+                  <View className="items-center flex-1">
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 1 }}>
+                      {resortStats[resort._id]?.totalRooms || 0}
                     </Text>
-                    <Text style={{ fontSize: 12, fontWeight: '500', fontFamily: 'Roboto-Medium', color: '#6B7280', textAlign: 'center' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>
                       Rooms
                     </Text>
                   </View>
                   
                   {/* Separator */}
-                  <View style={{ width: 1, height: 35, backgroundColor: '#E0E0E0' }} />
+                  <View className="w-px bg-gray-300" />
                   
                   {/* Total Bookings */}
-                  <View className="items-center flex-1 px-1.5">
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
-                      12
+                  <View className="items-center flex-1">
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 1 }}>
+                      {resortStats[resort._id]?.totalReservations || 0}
                     </Text>
-
-                    <Text style={{ fontSize: 12, fontWeight: '500', fontFamily: 'Roboto-Medium', color: '#6B7280', textAlign: 'center' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>
                       Bookings
                     </Text>
                   </View>
                   
                   {/* Separator */}
-                  <View className="w-px h-9 bg-gray-300" />
+                  <View className="w-px bg-gray-300" />
                   
                   {/* Reviews */}
-                  <View className="items-center flex-1 px-1.5">
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
-                      8
+                  <View className="items-center flex-1">
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 1 }}>
+                      {resortStats[resort._id]?.totalFeedbacks || 0}
                     </Text>
-                    <Text style={{ fontSize: 12, fontWeight: '500', fontFamily: 'Roboto-Medium', color: '#6B7280', textAlign: 'center' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>
                       Reviews
                     </Text>
                   </View>
                 </View>
                 
-                {/* Amenities Section */}
-                <View className="mt-5">
-                  <View className="flex-row items-center justify-between mb-4">
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', fontFamily: 'Roboto-Bold', color: '#111827', textAlign: 'left' }}>
-                      What this place offers
+                {/* Amenities Section - Compact */}
+                <View className="mb-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                      Amenities
                     </Text>
-                    <Button
-                      mode="contained"
+                    <TouchableOpacity 
                       onPress={() => openAmenityModal(resort)}
-                      buttonColor="#1F2937"
-                      textColor="white"
-                      icon={() => <Plus size={14} color="#FFFFFF" />}
-                      compact
-                      style={{ borderRadius: 16, paddingHorizontal: 12, }}
+                      className="bg-gray-100 rounded-full px-3 py-1.5"
                     >
-                      Add
-                    </Button>
+                      <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#1F2937' }}>
+                        Manage
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                   
-                  <View className="flex-row flex-wrap gap-3">
+                  <View className="flex-row flex-wrap gap-2">
                     {resortAmenities[resort._id]?.length > 0 ? (
                       resortAmenities[resort._id].map((amenity) => (
-                        <View key={amenity._id} className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full border border-gray-200">
-                          <Star size={16} color="#4F46E5" />
-                          <Text style={{ fontSize: 14, color: '#111827', marginLeft: 8, fontWeight: '500', fontFamily: 'Roboto-Medium' }}>
+                        <View key={amenity._id} className="flex-row items-center bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+                          <Star size={12} color="#1F2937" />
+                          <Text style={{ fontSize: 12, color: '#374151', marginLeft: 5, fontFamily: 'Roboto' }}>
                             {amenity.name}
                           </Text>
                         </View>
                       ))
                     ) : (
-                      <View 
-                        style={{ 
-                          borderColor: '#E0E0E0', 
-                          borderStyle: 'dashed', 
-                          borderWidth: 2, 
-                          borderRadius: 12, 
-                          paddingVertical: 16, 
-                          paddingHorizontal: 20,
-                          alignItems: 'center',
-                          backgroundColor: '#F8F9FA',
-                          width: '100%' 
-                        }}
+                      <TouchableOpacity 
+                        onPress={() => openAmenityModal(resort)}
+                        className="w-full bg-gray-50 rounded-xl py-4 px-4 border border-dashed border-gray-300"
                       >
-                        <Button
-                          mode="text"
-                          onPress={() => openAmenityModal(resort)}
-                          icon={() => <Plus size={20} color="#717171" />}
-                          textColor="#222222"
-                          style={{ marginTop: 0 }}
-                        >
-                          Add Amenities
-                        </Button>
-                        <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center', marginTop: 4 }}>
-                          Tell guests what your resort offers
+                        <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center' }}>
+                          Tap to add amenities
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                     )}
                   </View>
                 </View>
@@ -600,8 +615,8 @@ export default function ResortScreen() {
                   resortName={resort.resort_name}
                 />
                 
-                {/* View Rooms Button */}
-                <View className="flex-row gap-3 mt-6">
+                {/* Action Buttons - Compact */}
+                <View className="flex-row gap-2 mt-4 mb-4">
                   <Button 
                     mode="outlined"
                     onPress={() => router.push({
@@ -612,9 +627,14 @@ export default function ResortScreen() {
                         ownerView: 'true'
                       }
                     })}
-                    buttonColor="#F3F4F6"
-                    textColor="#111827"
-                    style={{ flex: 1, borderRadius: 8 }}
+                    textColor="#1F2937"
+                    style={{ 
+                      flex: 1, 
+                      borderRadius: 10, 
+                      borderColor: '#E5E7EB',
+                      borderWidth: 1.5
+                    }}
+                    labelStyle={{ fontSize: 13, fontFamily: 'Roboto-Medium' }}
                   >
                     Manage Rooms
                   </Button>
@@ -626,8 +646,8 @@ export default function ResortScreen() {
                       params: { resortId: resort._id }
                     })}
                     buttonColor="#1F2937"
-                    textColor="white"
-                    style={{ flex: 1,  borderRadius: 8 }}
+                    style={{ flex: 1, borderRadius: 10 }}
+                    labelStyle={{ fontSize: 13, fontFamily: 'Roboto-Medium' }}
                   >
                     Add Room
                   </Button>

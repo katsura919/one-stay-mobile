@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, View, TouchableOpacity, Alert, Text, RefreshControl } from 'react-native';
 import { 
   Button, 
-  Surface, 
-  Title, 
-  Paragraph, 
-  Text,
-  IconButton,
-  Chip
+  Card,
+  Chip,
+  ActivityIndicator
 } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { 
-  ArrowLeft,
   ChevronLeft,
   Plus,
   Users,
   Bed,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  DollarSign
 } from 'lucide-react-native';
 import { roomAPI, Room } from '@/services/roomService';
 
@@ -33,6 +31,7 @@ export default function ViewRooms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [resort, setResort] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (resortId) {
@@ -54,6 +53,23 @@ export default function ViewRooms() {
       setError('Failed to load rooms');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      setError(null);
+      
+      const response = await roomAPI.getRoomsByResort(resortId as string);
+      setRooms(response.rooms);
+      setResort(response.resort);
+      
+    } catch (error) {
+      console.error('Error refreshing rooms:', error);
+      Alert.alert('Error', 'Failed to refresh rooms');
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -90,229 +106,191 @@ export default function ViewRooms() {
     });
   };
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-        {/* Header */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          paddingHorizontal: 16, 
-          paddingTop: 60, 
-          paddingBottom: 16,
-          backgroundColor: '#FFFFFF',
-          borderBottomWidth: 1,
-          borderBottomColor: '#F0F0F0'
-        }}>
-          <ChevronLeft 
-            onPress={() => router.back()}
-            style={{ margin: 0 }}
-          />
-          <View style={{ flex: 1, marginLeft: 8 }}>
-            <Title style={{ fontSize: 20, fontWeight: '700', color: '#222222' }}>
-              Loading Rooms...
-            </Title>
-          </View>
-        </View>
-
-        <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-          <Surface style={{ padding: 40, alignItems: 'center', borderRadius: 16 }} elevation={1}>
-            <Paragraph>Loading rooms...</Paragraph>
-          </Surface>
-        </View>
-      </View>
-    );
-  }
-
   if (error) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <SafeAreaView className="flex-1 bg-white">
         {/* Header */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          paddingHorizontal: 16, 
-          paddingTop: 60, 
-          paddingBottom: 16,
-          backgroundColor: '#FFFFFF',
-          borderBottomWidth: 1,
-          borderBottomColor: '#F0F0F0'
-        }}>
-          <IconButton 
-            icon={() => <ArrowLeft size={24} color="#222222" />}
-            onPress={() => router.back()}
-            style={{ margin: 0 }}
-          />
-          <View style={{ flex: 1, marginLeft: 8 }}>
-            <Title style={{ fontSize: 20, fontWeight: '700', color: '#222222' }}>
+        <View className="bg-white px-6 py-2 border-b border-gray-100">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-full items-center justify-center"
+            >
+              <ChevronLeft size={20} color="#374151" />
+            </TouchableOpacity>
+            <Text className="text-xl text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
               Error
-            </Title>
+            </Text>
+            <View className="w-10" />
           </View>
         </View>
 
-        <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-          <Surface style={{ padding: 40, alignItems: 'center', borderRadius: 16 }} elevation={1}>
-            <Paragraph style={{ color: '#FF5A5F', marginBottom: 16 }}>
+        <View className="flex-1 justify-center items-center px-6">
+          <View className="bg-red-50 p-6 rounded-2xl items-center">
+            <XCircle size={48} color="#EF4444" />
+            <Text className="text-red-600 text-center mt-4 mb-6" style={{ fontFamily: 'Roboto-Medium' }}>
               {error}
-            </Paragraph>
-            <Button mode="outlined" onPress={fetchRooms}>
-              Try Again
-            </Button>
-          </Surface>
+            </Text>
+            <TouchableOpacity
+              onPress={fetchRooms}
+              className="bg-red-500 py-3 px-8 rounded-xl"
+            >
+              <Text className="text-white" style={{ fontFamily: 'Roboto-Bold' }}>
+                Try Again
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View style={{ 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        paddingHorizontal: 16, 
-        paddingTop: 60, 
-        paddingBottom: 16,
-        backgroundColor: '#FFFFFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0'
-      }}>
-        <ChevronLeft 
-          onPress={() => router.back()}
-          style={{ margin: 0 }}
-        />
-        <View style={{ flex: 1, marginLeft: 8 }}>
-          <Title style={{ fontSize: 20, fontWeight: '700', color: '#222222' }}>
-            {resort?.resort_name || resortName || 'Resort'} - Rooms
-          </Title>
-          <Text style={{ fontSize: 14, color: '#717171' }}>
-            {rooms.length} room{rooms.length !== 1 ? 's' : ''}
-          </Text>
+      <View className="bg-white px-6 py-2 border-b border-gray-100">
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full items-center justify-center"
+          >
+            <ChevronLeft size={20} color="#374151" />
+          </TouchableOpacity>
+          <View className="flex-1 mx-4">
+            <Text className="text-xl text-gray-900 text-center" style={{ fontFamily: 'Roboto-Bold' }}>
+              View Rooms
+            </Text>
+          </View>
+          {ownerView === 'true' ? (
+            <TouchableOpacity 
+              onPress={handleCreateRoom}
+              className="w-10 h-10 rounded-full items-center justify-center bg-gray-800"
+            >
+              <Plus size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          ) : (
+            <View className="w-10" />
+          )}
         </View>
-        {ownerView === 'true' && (
-          <IconButton 
-            icon={() => <Plus size={24} color="#FF5A5F" />}
-            onPress={handleCreateRoom}
-            style={{ margin: 0 }}
-          />
-        )}
       </View>
 
-      {rooms.length === 0 ? (
+      {loading ? (
+        /* Loading State */
+        <View className="flex-1 justify-center items-center px-6">
+          <ActivityIndicator size="large" color="#1F2937" />
+          <Text className="text-gray-600 mt-4" style={{ fontFamily: 'Roboto-Medium' }}>
+            Loading rooms...
+          </Text>
+        </View>
+      ) : rooms.length === 0 ? (
         /* Empty State */
-        <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-          <Surface style={{ padding: 40, alignItems: 'center', borderRadius: 16 }} elevation={1}>
-            <Surface style={{ backgroundColor: '#FFF0F0', borderRadius: 40, padding: 20, marginBottom: 24 }}>
-              <Bed size={32} color="#FF5A5F" />
-            </Surface>
-            <Title style={{ marginBottom: 8 }}>No Rooms Found</Title>
-            <Paragraph style={{ textAlign: 'center', marginBottom: 24 }}>
+        <View className="flex-1 justify-center items-center px-6">
+          <View className="bg-white p-8 rounded-3xl items-center shadow-sm" style={{ maxWidth: 400 }}>
+            <View className="bg-gray-100 rounded-full p-6 mb-6">
+              <Bed size={40} color="#1F2937" />
+            </View>
+            <Text className="text-2xl text-gray-900 mb-3 text-center" style={{ fontFamily: 'Roboto-Bold' }}>
+              No Rooms Found
+            </Text>
+            <Text className="text-gray-600 text-center mb-8 leading-6" style={{ fontFamily: 'Roboto' }}>
               You haven't created any rooms for this property yet. Add rooms to start receiving bookings.
-            </Paragraph>
-            <Button 
-              mode="contained" 
-              buttonColor="#FF5A5F"
-              onPress={handleCreateRoom}
-            >
-              Add Your First Room
-            </Button>
-          </Surface>
+            </Text>
+            {ownerView === 'true' && (
+              <TouchableOpacity 
+                onPress={handleCreateRoom}
+                className="bg-gray-800 py-4 px-8 rounded-2xl shadow-lg"
+                style={{ elevation: 3 }}
+              >
+                <Text className="text-white text-base" style={{ fontFamily: 'Roboto-Bold' }}>
+                  Add Your First Room
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       ) : (
         /* Rooms List */
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <View style={{ padding: 16 }}>
+        <ScrollView 
+          className="flex-1" 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#1F2937']} // Android
+              tintColor="#1F2937" // iOS
+              title="Pull to refresh" // iOS
+              titleColor="#6B7280" // iOS
+            />
+          }
+        >
+          <View className="px-6 pt-6">
             {rooms.map((room) => (
               <TouchableOpacity key={room._id} activeOpacity={0.7}>
-                <Surface style={{ 
-                  marginBottom: 16, 
-                  borderRadius: 16, 
-                  overflow: 'hidden'
-                }} elevation={2}>
-                  <View style={{ padding: 20 }}>
-                    {/* Room Header */}
-                    <View style={{ 
-                      flexDirection: 'row', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'flex-start',
-                      marginBottom: 12
-                    }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ 
-                          fontSize: 18, 
-                          fontWeight: '700', 
-                          color: '#222222',
-                          marginBottom: 4
-                        }}>
+                <Card className="mb-3 shadow-none border" style={{ 
+                  borderRadius: 12,
+                  borderColor: '#E5E7EB',
+                  borderWidth: 1,
+                }}>
+                  <Card.Content className="p-4 bg-white" style={{ borderRadius: 12 }}>
+                    {/* Room Header - Compact Layout */}
+                    <View className="flex-row justify-between items-center mb-3">
+                      <View className="flex-1 mr-3">
+                        <Text className="text-lg text-gray-900 mb-1" style={{ fontFamily: 'Roboto-Bold' }}>
                           {room.room_type}
                         </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                          <Users size={16} color="#717171" />
-                          <Text style={{ 
-                            fontSize: 14, 
-                            color: '#717171', 
-                            marginLeft: 6
-                          }}>
-                            {room.capacity} guests
+                        <View className="flex-row items-center">
+                          <Users size={14} color="#6B7280" />
+                          <Text className="text-xs text-gray-500 ml-1.5" style={{ fontFamily: 'Roboto' }}>
+                            {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                           </Text>
                         </View>
-                        {room.price_per_night && (
-                          <View style={{ marginTop: 4 }}>
-                            <Text style={{ 
-                              fontSize: 16, 
-                              fontWeight: '600', 
-                              color: '#10B981'
-                            }}>
-                              ${room.price_per_night}/night
-                            </Text>
-                          </View>
-                        )}
                       </View>
                       
-                      {/* Status Chip */}
-                      <Chip 
-                        mode="flat"
-                        style={{ 
+                      {/* Status Indicator - Only show if not available */}
+                      {room.status.toLowerCase() !== 'available' && (
+                        <View className="flex-row items-center px-2.5 py-1 rounded-full" style={{ 
                           backgroundColor: `${getStatusColor(room.status)}15`,
                           borderColor: getStatusColor(room.status),
                           borderWidth: 1
-                        }}
-                        textStyle={{ 
-                          color: getStatusColor(room.status),
-                          fontSize: 12,
-                          fontWeight: '600'
-                        }}
-                        icon={() => getStatusIcon(room.status)}
-                      >
-                        {room.status.charAt(0).toUpperCase() + room.status.slice(1)}
-                      </Chip>
+                        }}>
+                          {getStatusIcon(room.status)}
+                          <Text className="text-xs ml-1" style={{ 
+                            color: getStatusColor(room.status),
+                            fontFamily: 'Roboto-Bold'
+                          }}>
+                            {room.status.charAt(0).toUpperCase() + room.status.slice(1)}
+                          </Text>
+                        </View>
+                      )}
                     </View>
 
-                    {/* Room Details */}
-                    <View style={{ 
-                      flexDirection: 'row', 
-                      justifyContent: 'space-between',
-                      paddingTop: 16,
-                      borderTopWidth: 1,
-                      borderTopColor: '#F0F0F0'
-                    }}>
-                      <Text style={{ fontSize: 12, color: '#717171' }}>
-                        Created: {new Date(room.createdAt).toLocaleDateString()}
-                      </Text>
-                      <Text style={{ fontSize: 12, color: '#717171' }}>
-                        Room ID: {room._id.slice(-6)}
+                    {/* Price and ID - Compact Bottom Row */}
+                    <View className="flex-row justify-between items-center pt-3 border-t border-gray-100">
+                      {room.price_per_night && (
+                        <View className="flex-row items-baseline">
+                          <Text className="text-base text-gray-900" style={{ fontFamily: 'Roboto-Bold' }}>
+                            ₱{room.price_per_night}
+                          </Text>
+                          <Text className="text-xs text-gray-500 ml-1" style={{ fontFamily: 'Roboto' }}>
+                            /night
+                          </Text>
+                        </View>
+                      )}
+                      <Text className="text-xs text-gray-400" style={{ fontFamily: 'Roboto' }}>
+                        ID: {room._id.slice(-6).toUpperCase()}
                       </Text>
                     </View>
-                  </View>
-                </Surface>
+                  </Card.Content>
+                </Card>
               </TouchableOpacity>
             ))}
           </View>
           
           {/* Bottom Spacing */}
-          <View style={{ height: 100 }} />
+          <View className="mb-8" />
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
