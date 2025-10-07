@@ -1,33 +1,50 @@
 
 import React, { useState } from 'react';
-import { ScrollView, View, StatusBar } from 'react-native';
+import { ScrollView, View, StatusBar, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native';
 
 import CategoryTabs from '../../../components/CategoryTabs';
-import ExplorePlaces from '../../../components/ExplorePlaces';
 import Header from '../../../components/home-header';
 import HotelCardList from '../../../components/HotelCardList';
 import SearchBar from '../../../components/home-search-bar';
 import { useAuth } from '@/contexts/AuthContext';
-import { SafeAreaView } from 'react-native';
+
 export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('Amazing pools');
+  const [refreshing, setRefreshing] = useState(false);
   const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Add refresh logic here - HotelCardList will auto-refresh on mount
+    setRefreshing(false);
+  };
 
-
-  // Default fallback home screen (for guests or users without specific roles)
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Header />
+    <SafeAreaView className="flex-1 bg-gray-50 py-5">
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#1F2937']}
+            tintColor="#1F2937"
+          />
+        }
+      >
+        <View className="bg-white">
+          <Header />
+          <SearchBar />
+        </View>
         <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
         <HotelCardList />
-        <View className="mb-24" />
+        <View className="mb-20" />
       </ScrollView>
     </SafeAreaView>
   );

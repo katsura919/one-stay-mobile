@@ -34,79 +34,99 @@ const HotelCardList = () => {
 
   if (loading) {
     return (
-      <View className="mt-2 px-6 py-10">
+      <View className="mt-2 px-5 py-10">
         <ActivityIndicator size="large" color="#1F2937" />
       </View>
     );
   }
 
   return (
-  <View className="mt-2 px-6">
-    <View className="flex-row items-center justify-between mb-4">
-      <Text className="text-xl font-bold text-gray-900">Stay nearby</Text>
-      <TouchableOpacity>
-        <Text className="text-base font-semibold text-gray-900 underline">Show all</Text>
+  <View className="mt-1 px-5">
+    <View className="flex-row items-center justify-between mb-3">
+      <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+        Featured Stays
+      </Text>
+      <TouchableOpacity activeOpacity={0.7}>
+        <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#1F2937' }}>
+          See all
+        </Text>
       </TouchableOpacity>
     </View>
     
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-2">
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
       {resorts.length > 0 ? (
         resorts.map((resort) => (
           <TouchableOpacity 
             key={resort._id} 
-            className="mx-2 w-72"
+            className="mx-1.5 w-64"
             onPress={() => handleResortPress(resort._id)}
+            activeOpacity={0.9}
           >
-            <View className="relative">
+            <View className="relative bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
               <Image 
                 source={resort.image ? { uri: resort.image } : require('@/assets/images/react-logo.png')} 
-                className="w-full h-72 rounded-2xl bg-gray-200" 
+                className="w-full h-48 bg-gray-200" 
+                resizeMode="cover"
               />
-              <TouchableOpacity className="absolute top-3 right-3 w-7 h-7 items-center justify-center">
-                <Ionicons name="heart-outline" size={24} color="#fff" />
+              <TouchableOpacity className="absolute top-2.5 right-2.5 bg-white/90 rounded-full p-1.5">
+                <Ionicons name="heart-outline" size={18} color="#1F2937" />
               </TouchableOpacity>
               {resort.rating >= 4.5 && resort.reviews >= 10 && (
-                <View className="absolute top-3 left-3 bg-white px-2 py-1 rounded-full">
-                  <Text className="text-xs font-semibold">Guest favorite</Text>
+                <View className="absolute top-2.5 left-2.5 bg-white/95 px-2.5 py-1 rounded-lg shadow-sm">
+                  <Text style={{ fontSize: 11, fontFamily: 'Roboto-Bold', color: '#1F2937' }}>
+                    ⭐ Guest favorite
+                  </Text>
                 </View>
               )}
             </View>
             
-            <View className="mt-3">
-              <View className="flex-row items-start justify-between">
-                <Text className="text-base font-semibold text-gray-900 flex-1" numberOfLines={1}>
+            <View className="p-3">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text 
+                  style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#111827', flex: 1 }} 
+                  numberOfLines={1}
+                >
                   {resort.resort_name}
                 </Text>
                 {resort.rating > 0 && (
-                  <View className="flex-row items-center ml-2">
-                    <Ionicons name="star" size={14} color="#000" />
-                    <Text className="ml-1 text-sm font-medium">{resort.rating.toFixed(2)}</Text>
+                  <View className="flex-row items-center ml-2 bg-gray-100 px-2 py-0.5 rounded-lg">
+                    <Ionicons name="star" size={12} color="#F59E0B" />
+                    <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#111827', marginLeft: 2 }}>
+                      {resort.rating.toFixed(1)}
+                    </Text>
                   </View>
                 )}
               </View>
               
-              <Text className="text-sm text-gray-600 mt-0.5" numberOfLines={1}>
-                {resort.location.address.split(',')[0] || 'Location'}
+              <Text 
+                style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginBottom: 6 }} 
+                numberOfLines={1}
+              >
+                {resort.location?.address?.split(',')[0] || 'Location'}
               </Text>
               
-              {resort.reviews > 0 && (
-                <Text className="text-sm text-gray-600 mt-0.5">
-                  {resort.reviews} {resort.reviews === 1 ? 'review' : 'reviews'}
-                </Text>
-              )}
-              
-              <View className="flex-row items-center mt-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  ₱{resort.price_per_night.toLocaleString()}
-                </Text>
-                <Text className="text-sm text-gray-600 ml-1">night</Text>
+              <View className="flex-row items-center justify-between">
+                {resort.price_per_night > 0 ? (
+                  <View className="flex-row items-baseline">
+                    <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                      ₱{resort.price_per_night.toLocaleString()}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 3 }}>
+                      /night
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#9CA3AF' }}>
+                    Price TBA
+                  </Text>
+                )}
+                
+                {resort.available_rooms > 0 && (
+                  <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#10B981' }}>
+                    {resort.available_rooms} available
+                  </Text>
+                )}
               </View>
-              
-              {resort.available_rooms > 0 && (
-                <Text className="text-xs text-green-600 mt-1">
-                  {resort.available_rooms} {resort.available_rooms === 1 ? 'room' : 'rooms'} available
-                </Text>
-              )}
             </View>
           </TouchableOpacity>
         ))

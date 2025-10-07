@@ -1,25 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Search, SlidersHorizontal } from 'lucide-react-native';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 
 const SearchBar = () => {
   const handleSearchPress = () => {
-    router.push('/SearchScreen');
+    router.push('/customer/SearchScreen');
   };
 
   return (
-    <TouchableOpacity className="mx-6 mb-6" onPress={handleSearchPress}>
-      <View className="flex-row items-center px-4 py-4 bg-white rounded-full shadow-lg border border-gray-100">
-      <Ionicons name="search" size={24} color="#1F2937" />
-      <View className="flex-1 ml-4">
-        <Text className="text-base font-semibold text-gray-900">Where are you going?</Text>
+    <TouchableOpacity className="mx-5 mb-4" onPress={handleSearchPress} activeOpacity={0.7}>
+      <View className="flex-row items-center px-4 py-3 bg-gray-50 rounded-2xl border border-gray-200">
+        <Search size={20} color="#6B7280" />
+        <View className="flex-1 ml-3">
+          <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#9CA3AF' }}>
+            Search destinations...
+          </Text>
+        </View>
+        <View className="w-8 h-8 bg-[#1F2937] rounded-lg items-center justify-center">
+          <SlidersHorizontal size={16} color="#fff" />
+        </View>
       </View>
-      <View className="w-10 h-10 bg-[#1F2937] rounded-full items-center justify-center">
-        <Ionicons name="options" size={18} color="#fff" />
-      </View>
-    </View>
-  </TouchableOpacity>
+    </TouchableOpacity>
   );
 };
 

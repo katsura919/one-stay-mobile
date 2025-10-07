@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Heart, MessageCircle, Search, User } from "lucide-react-native";
+import { Heart, MessageCircle, House, User } from "lucide-react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
@@ -40,7 +40,7 @@ export default function TabLayout() {
         options={{
           title: "Explore",
           tabBarIcon: ({ color, size }) => (
-            <Search color={color} size={size} />
+            <House color={color} size={size} />
           ),
           headerShown: false,
         }}

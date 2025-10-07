@@ -36,7 +36,7 @@ const customerResortAPI = {
   // Get all resorts (basic data)
   getAllResorts: async (): Promise<BasicResort[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/resorts`);
+      const response = await axios.get(`${API_BASE_URL}/resort`);
       return response.data;
     } catch (error) {
       console.error('Error fetching resorts:', error);
@@ -47,7 +47,7 @@ const customerResortAPI = {
   // Get featured resorts with enhanced data (rating, reviews, price)
   getFeaturedResorts: async (): Promise<EnhancedResort[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/resorts/featured`);
+      const response = await axios.get(`${API_BASE_URL}/resort/featured`);
       return response.data;
     } catch (error) {
       console.error('Error fetching featured resorts:', error);
@@ -58,7 +58,7 @@ const customerResortAPI = {
   // Get resort by ID
   getResortById: async (resortId: string): Promise<BasicResort> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/resorts/${resortId}`);
+      const response = await axios.get(`${API_BASE_URL}/resort/${resortId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching resort:', error);
@@ -69,7 +69,7 @@ const customerResortAPI = {
   // Search resorts by keyword
   searchResorts: async (query: string): Promise<BasicResort[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/resorts/search`, {
+      const response = await axios.get(`${API_BASE_URL}/resort/search`, {
         params: { q: query }
       });
       return response.data;
