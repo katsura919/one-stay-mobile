@@ -273,62 +273,78 @@ export default function ChatScreen() {
     <TouchableOpacity
       key={chat._id}
       onPress={() => handleChatPress(chat)}
-      className={`flex-row items-center p-4 active:bg-gray-50 ${
-        chat.unread_count > 0 ? 'bg-blue-50' : 'bg-white'
-      }`}
+      activeOpacity={0.7}
+      className="bg-white"
       style={{ 
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
         borderLeftWidth: chat.unread_count > 0 ? 3 : 0,
-        borderLeftColor: chat.unread_count > 0 ? '#3B82F6' : 'transparent',
+        borderLeftColor: chat.unread_count > 0 ? '#1F2937' : 'transparent',
       }}
     >
-      <View className="relative">
-        <Image
-          source={{ uri: chat.resort_image }}
-          className="w-16 h-16 rounded-2xl"
-          style={{ backgroundColor: '#f3f4f6' }}
-        />
-        {chat.unread_count > 0 && (
-          <View className="absolute -top-2 -right-2 bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center px-1">
-            <Text className="text-white text-xs font-bold">
-              {chat.unread_count > 99 ? '99+' : chat.unread_count}
-            </Text>
-          </View>
-        )}
-      </View>
-      
-      <View className="flex-1 ml-4">
-        <View className="flex-row items-center justify-between mb-1">
-          <Text 
-            className={`text-lg ${chat.unread_count > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-900'}`} 
-            numberOfLines={1}
-          >
-            {chat.resort_name}
-          </Text>
-          <Text 
-            className={`text-sm ${chat.unread_count > 0 ? 'font-bold text-gray-900' : 'font-medium text-gray-500'}`}
-          >
-            {formatTime(chat.last_message_time)}
-          </Text>
+      <View className="flex-row items-center px-4 py-3">
+        <View className="relative">
+          <Image
+            source={{ uri: chat.resort_image }}
+            className="w-14 h-14 rounded-xl"
+            style={{ backgroundColor: '#f3f4f6' }}
+          />
+          {chat.unread_count > 0 && (
+            <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">
+              <Text style={{ fontSize: 10, fontFamily: 'Roboto-Bold', color: '#FFFFFF' }}>
+                {chat.unread_count > 99 ? '99+' : chat.unread_count}
+              </Text>
+            </View>
+          )}
         </View>
         
-        <Text 
-          className={`text-sm mb-2 ${chat.unread_count > 0 ? 'font-semibold text-gray-700' : 'text-gray-600'}`} 
-          numberOfLines={1}
-        >
-          {chat.owner_name}
-        </Text>
-        
-        <Text 
-          className={`text-sm leading-5 ${chat.unread_count > 0 ? 'text-gray-900 font-bold' : 'text-gray-500'}`}
-          numberOfLines={2}
-        >
-          {chat.last_message}
-        </Text>
+        <View className="flex-1 ml-3">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text 
+              style={{ 
+                fontSize: 15, 
+                fontFamily: chat.unread_count > 0 ? 'Roboto-Bold' : 'Roboto-Medium', 
+                color: '#111827',
+                flex: 1,
+                marginRight: 8
+              }} 
+              numberOfLines={1}
+            >
+              {chat.resort_name}
+            </Text>
+            <Text 
+              style={{ 
+                fontSize: 11, 
+                fontFamily: chat.unread_count > 0 ? 'Roboto-Bold' : 'Roboto', 
+                color: chat.unread_count > 0 ? '#111827' : '#9CA3AF'
+              }}
+            >
+              {formatTime(chat.last_message_time)}
+            </Text>
+          </View>
+          
+          <Text 
+            style={{ 
+              fontSize: 12, 
+              fontFamily: 'Roboto', 
+              color: '#6B7280',
+              marginBottom: 2
+            }} 
+            numberOfLines={1}
+          >
+            {chat.owner_name}
+          </Text>
+          
+          <Text 
+            style={{ 
+              fontSize: 13, 
+              fontFamily: chat.unread_count > 0 ? 'Roboto-Medium' : 'Roboto', 
+              color: chat.unread_count > 0 ? '#374151' : '#9CA3AF',
+              lineHeight: 18
+            }}
+            numberOfLines={2}
+          >
+            {chat.last_message}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -336,43 +352,22 @@ export default function ChatScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View 
-        className="px-4 py-4 bg-white"
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 4,
-        }}
-      >
+      <View className="px-4 py-3 bg-white border-b border-gray-200">
         <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Text className="text-2xl font-bold text-gray-900">Inbox</Text>
-            {__DEV__ && (
-              <View className="ml-3 bg-blue-100 px-2 py-1 rounded-full">
-                <Text className="text-xs text-blue-600">API Mode</Text>
-              </View>
-            )}
-          </View>
-          <View className="flex-row items-center">
-            {!socketConnected && (
-              <View className="mr-3 bg-red-100 px-2 py-1 rounded-full">
-                <Text className="text-xs text-red-600">Offline</Text>
-              </View>
-            )}
-            <TouchableOpacity className="p-2 rounded-full bg-gray-100">
-              <Search size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
+          <Text style={{ fontSize: 22, fontFamily: 'Roboto-Bold', color: '#111827' }}>Messages</Text>
+          {!socketConnected && (
+            <View className="bg-red-50 px-2 py-1 rounded-lg">
+              <Text style={{ fontSize: 10, fontFamily: 'Roboto-Medium', color: '#DC2626' }}>Offline</Text>
+            </View>
+          )}
         </View>
       </View>
 
       {/* Loading State */}
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
-          <Text className="mt-4 text-gray-600">Loading chats...</Text>
+          <ActivityIndicator size="large" color="#1F2937" />
+          <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', marginTop: 16 }}>Loading messages...</Text>
         </View>
       ) : (
         /* Chat List */
@@ -380,13 +375,12 @@ export default function ChatScreen() {
           <ScrollView 
             className="flex-1" 
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 8 }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={refreshChats}
-                tintColor="#EF4444"
-                colors={["#EF4444"]}
+                tintColor="#1F2937"
+                colors={["#1F2937"]}
               />
             }
           >
@@ -394,7 +388,7 @@ export default function ChatScreen() {
               <View key={chat._id}>
                 {renderChatItem(chat)}
                 {index < chats.length - 1 && (
-                  <View className="h-3" />
+                  <View className="h-px bg-gray-200 ml-[70px]" />
                 )}
               </View>
             ))}
@@ -402,13 +396,13 @@ export default function ChatScreen() {
         ) : (
           /* Empty State */
           <View className="flex-1 items-center justify-center px-6">
-            <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
-              <MessageCircle size={32} color="#9CA3AF" />
+            <View className="w-16 h-16 rounded-full bg-gray-100 items-center justify-center mb-4">
+              <MessageCircle size={28} color="#9CA3AF" />
             </View>
-            <Text className="text-xl font-semibold text-gray-900 mb-2 text-center">
+            <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 8, textAlign: 'center' }}>
               No messages yet
             </Text>
-            <Text className="text-gray-500 text-center leading-5">
+            <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center', lineHeight: 20 }}>
               Start exploring and reach out to hosts to begin your conversation
             </Text>
           </View>

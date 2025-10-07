@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingV
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Send, Phone, MoreVertical } from 'lucide-react-native';
+import { ArrowLeft, Send } from 'lucide-react-native';
 import { Chat, ChatMessage } from '../../data/chat-data';
 import { customerChatSocket, ChatMessage as SocketChatMessage } from '../../lib/chat-socket';
 import { chatService, ChatApiResponse } from '../../services/chatService';
@@ -336,7 +336,7 @@ export default function ChatConversation() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <ArrowLeft size={24} color="#000" />
+          <ArrowLeft size={24} color="#1F2937" />
         </TouchableOpacity>
         
         <View style={styles.headerContent}>
@@ -350,15 +350,6 @@ export default function ChatConversation() {
               {isConnected ? 'Online' : 'Offline'} • {chat.owner_name}
             </Text>
           </View>
-        </View>
-        
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Phone size={20} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
-            <MoreVertical size={20} color="#000" />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -420,30 +411,34 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: '#666',
+    fontFamily: 'Roboto',
+    fontSize: 13,
   },
   errorText: {
     color: '#f44336',
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 20,
+    fontFamily: 'Roboto-Medium',
   },
   backButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1F2937',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   backButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 14,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e5e7eb',
   },
   headerButton: {
     padding: 8,
@@ -452,12 +447,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: 8,
   },
   resortImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
   },
   headerText: {
     marginLeft: 12,
@@ -465,23 +460,22 @@ const styles = StyleSheet.create({
   },
   resortName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontFamily: 'Roboto-Bold',
+    color: '#1F2937',
   },
   ownerName: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 12,
+    fontFamily: 'Roboto',
+    color: '#6b7280',
     marginTop: 2,
-  },
-  headerActions: {
-    flexDirection: 'row',
   },
   messagesContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
+    paddingTop: 8,
   },
   messageContainer: {
-    marginVertical: 4,
+    marginVertical: 3,
   },
   customerMessage: {
     alignItems: 'flex-end',
@@ -490,73 +484,80 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   messageBubble: {
-    maxWidth: '80%',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
+    maxWidth: '75%',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 16,
   },
   customerBubble: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1F2937',
     borderBottomRightRadius: 4,
   },
   resortBubble: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f3f4f6',
     borderBottomLeftRadius: 4,
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 20,
+    fontFamily: 'Roboto',
   },
   customerText: {
     color: '#fff',
   },
   resortText: {
-    color: '#000',
+    color: '#1F2937',
   },
   timeText: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 4,
+    fontFamily: 'Roboto',
   },
   customerTime: {
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.7)',
   },
   resortTime: {
-    color: '#666',
+    color: '#9ca3af',
   },
   inputContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#e5e7eb',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#f8f8f8',
-    borderRadius: 25,
-    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 24,
+    paddingHorizontal: 14,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     maxHeight: 100,
     paddingVertical: 8,
+    fontFamily: 'Roboto',
+    color: '#1F2937',
   },
   sendButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1F2937',
     borderRadius: 20,
-    padding: 8,
+    padding: 9,
     marginLeft: 8,
   },
   sendButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#d1d5db',
   },
   connectionStatus: {
     textAlign: 'center',
-    color: '#f44336',
-    fontSize: 12,
+    color: '#ef4444',
+    fontSize: 11,
     marginTop: 4,
+    fontFamily: 'Roboto',
   },
 });
