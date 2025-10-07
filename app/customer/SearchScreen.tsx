@@ -244,7 +244,7 @@ export default function SearchScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 py-5 bg-gray-50">
+        <SafeAreaView className="flex-1  bg-gray-50">
             {/* Header */}
             <View className="bg-white px-5 pt-3 pb-3 shadow-sm">
                 <View className="flex-row items-center justify-center relative">

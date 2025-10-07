@@ -30,14 +30,7 @@ const Header = () => {
           </Text>
         </View>
       </View>
-      
-      <TouchableOpacity 
-        className="bg-gray-100 rounded-full p-2.5" 
-        onPress={handleSearchPress}
-        activeOpacity={0.7}
-      >
-        <Search color="#1F2937" size={20} />
-      </TouchableOpacity>
+
     </View>
   );
 };

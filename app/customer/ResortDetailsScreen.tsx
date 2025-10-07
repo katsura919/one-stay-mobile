@@ -31,6 +31,8 @@ import { resortAPI, Resort } from '@/services/resortService';
 import { roomAPI, Room } from '@/services/roomService';
 import { chatService } from '@/services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
+import { statsAPI, ResortStats } from '@/services/statsService';
+import { amenityAPI, Amenity } from '@/services/amenityService';
 
 const { width } = Dimensions.get('window');
 
@@ -41,6 +43,8 @@ export default function ResortDetailsScreen() {
   const [rooms, setRooms] = React.useState<Room[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isFavorite, setIsFavorite] = React.useState(false);
+  const [stats, setStats] = React.useState<ResortStats | null>(null);
+  const [amenities, setAmenities] = React.useState<Amenity[]>([]);
 
   React.useEffect(() => {
     if (resortId) {
@@ -51,12 +55,16 @@ export default function ResortDetailsScreen() {
   const fetchResortDetails = async () => {
     try {
       setLoading(true);
-      const [resortData, roomsData] = await Promise.all([
+      const [resortData, roomsData, statsData, amenitiesData] = await Promise.all([
         resortAPI.getResortById(resortId as string),
-        roomAPI.getRoomsByResort(resortId as string)
+        roomAPI.getRoomsByResort(resortId as string),
+        statsAPI.getResortStats(resortId as string),
+        amenityAPI.getAmenitiesByResort(resortId as string)
       ]);
       setResort(resortData);
       setRooms(roomsData.rooms);
+      setStats(statsData);
+      setAmenities(amenitiesData);
     } catch (error) {
       console.error('Error fetching resort details:', error);
       Alert.alert('Error', 'Failed to load resort details. Please try again.');
@@ -146,24 +154,13 @@ export default function ResortDetailsScreen() {
     handleContact();
   };
 
-  if (loading) {
+  if (!resort && !loading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1F2937" />
-          <Text className="text-gray-600 mt-4">Loading resort details...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!resort) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-lg text-gray-600">Resort not found</Text>
+          <Text style={{ fontSize: 18, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>Resort not found</Text>
           <TouchableOpacity onPress={handleBack} className="mt-4">
-            <Text className="text-blue-600">Go Back</Text>
+            <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: '#3B82F6' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -171,284 +168,300 @@ export default function ResortDetailsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Image */}
         <View className="relative">
-          {resort.image ? (
+          {loading ? (
+            <View 
+              style={{ width, height: 280 }} 
+              className="bg-gray-200 items-center justify-center"
+            >
+              <ActivityIndicator size="large" color="#1F2937" />
+            </View>
+          ) : resort?.image ? (
             <Image 
               source={{ uri: resort.image }} 
-              style={{ width, height: 300 }}
+              style={{ width, height: 280 }}
               resizeMode="cover"
             />
           ) : (
             <View 
-              style={{ width, height: 300 }} 
+              style={{ width, height: 280 }} 
               className="bg-gray-200 items-center justify-center"
             >
-              <Text className="text-gray-500">No Image Available</Text>
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#9CA3AF' }}>No Image Available</Text>
             </View>
           )}
           
           {/* Header Overlay */}
-          <View className="absolute top-12 left-0 right-0 flex-row justify-between items-center px-5">
+          <View className="absolute top-3 left-0 right-0 flex-row justify-between items-center px-4">
             <TouchableOpacity 
               onPress={handleBack}
-              className="w-10 h-10 bg-black/50 rounded-full items-center justify-center"
+              className="w-9 h-9 bg-white/95 rounded-full items-center justify-center shadow-sm"
             >
-              <ChevronLeft color="#FFFFFF" size={24} />
+              <ChevronLeft color="#1F2937" size={20} />
             </TouchableOpacity>
             
-            <View className="flex-row space-x-3">
-              <TouchableOpacity 
-                onPress={handleShare}
-                className="w-10 h-10 bg-black/50 rounded-full items-center justify-center"
-              >
-                <Share2 color="#FFFFFF" size={20} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                onPress={handleFavorite}
-                className="w-10 h-10 bg-black/50 rounded-full items-center justify-center"
-              >
-                <Heart 
-                  color={isFavorite ? "#EF4444" : "#FFFFFF"} 
-                  size={20} 
-                  fill={isFavorite ? "#EF4444" : "transparent"}
-                />
-              </TouchableOpacity>
-            </View>
+            {!loading && (
+              <View className="flex-row gap-2">
+                <TouchableOpacity 
+                  onPress={handleShare}
+                  className="w-9 h-9 bg-white/95 rounded-full items-center justify-center shadow-sm"
+                >
+                  <Share2 color="#1F2937" size={18} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  onPress={handleFavorite}
+                  className="w-9 h-9 bg-white/95 rounded-full items-center justify-center shadow-sm"
+                >
+                  <Heart 
+                    color={isFavorite ? "#EF4444" : "#1F2937"} 
+                    size={18} 
+                    fill={isFavorite ? "#EF4444" : "transparent"}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
 
         {/* Resort Info */}
-        <View className="px-5 py-6">
-          {/* Title and Rating */}
-          <View className="mb-4">
-            <Text className="text-2xl font-bold text-gray-900 mb-2">
-              {resort.resort_name}
-            </Text>
-            
-            <View className="flex-row items-center mb-3">
-              <View className="flex-row items-center mr-4">
-                <Star color="#FCD34D" size={16} fill="#FCD34D" />
-                <Text className="text-sm text-gray-600 ml-1">4.5 (324 reviews)</Text>
+        <View className="bg-white rounded-t-3xl -mt-4 px-4 pt-4">
+          {loading ? (
+            /* Skeleton Loading */
+            <>
+              {/* Title Skeleton */}
+              <View className="mb-3">
+                <View className="h-7 bg-gray-200 rounded-lg mb-3" style={{ width: '70%' }} />
+                <View className="flex-row items-center mb-2 gap-3">
+                  <View className="h-7 w-32 bg-gray-200 rounded-lg" />
+                  <View className="h-7 w-20 bg-gray-200 rounded-lg" />
+                </View>
+                <View className="h-4 bg-gray-200 rounded-lg" style={{ width: '90%' }} />
               </View>
-              <Text className="text-sm text-green-600 font-medium">Available</Text>
-            </View>
 
-            <View className="flex-row items-center">
-              <MapPin color="#6B7280" size={16} />
-              <Text className="text-base text-gray-600 ml-2 flex-1">
-                {resort.location.address}
-              </Text>
-            </View>
-          </View>
+              {/* Description Skeleton */}
+              <View className="mb-4">
+                <View className="h-5 w-32 bg-gray-200 rounded-lg mb-2" />
+                <View className="h-4 bg-gray-200 rounded-lg mb-2" style={{ width: '100%' }} />
+                <View className="h-4 bg-gray-200 rounded-lg mb-2" style={{ width: '95%' }} />
+                <View className="h-4 bg-gray-200 rounded-lg" style={{ width: '85%' }} />
+              </View>
 
-          {/* Description */}
-          {resort.description && (
-            <View className="mb-6">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                About this resort
+              {/* Amenities Skeleton */}
+              <View className="mb-4">
+                <View className="h-5 w-24 bg-gray-200 rounded-lg mb-2" />
+                <View className="flex-row flex-wrap gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <View key={i} className="h-8 w-24 bg-gray-200 rounded-lg" />
+                  ))}
+                </View>
+              </View>
+
+              {/* Rooms Skeleton */}
+              <View className="mb-4">
+                <View className="h-5 w-40 bg-gray-200 rounded-lg mb-3" />
+                {[1, 2].map((i) => (
+                  <View key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-3">
+                    <View className="h-5 w-32 bg-gray-200 rounded-lg mb-2" />
+                    <View className="h-4 w-24 bg-gray-200 rounded-lg mb-2" />
+                    <View className="h-5 w-28 bg-gray-200 rounded-lg" />
+                  </View>
+                ))}
+              </View>
+            </>
+          ) : resort ? (
+            <>
+              {/* Title and Rating */}
+              <View className="mb-3">
+                <Text style={{ fontSize: 22, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
+                  {resort.resort_name}
+                </Text>
+                
+                <View className="flex-row items-center mb-2">
+                  <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-lg mr-3">
+                    <Star color="#F59E0B" size={14} fill="#F59E0B" />
+                    <Text style={{ fontSize: 13, fontFamily: 'Roboto-Bold', color: '#92400E', marginLeft: 4 }}>
+                      {stats?.averageRating ? stats.averageRating.toFixed(1) : '0.0'}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#92400E', marginLeft: 4 }}>
+                      ({stats?.totalFeedbacks || 0} reviews)
+                    </Text>
+                  </View>
+                  {rooms.filter(room => room.status === 'available').length > 0 && (
+                    <View className="bg-green-50 px-2 py-1 rounded-lg">
+                      <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#166534' }}>Available</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View className="flex-row items-center">
+                  <MapPin color="#6B7280" size={14} />
+                  <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 6, flex: 1 }}>
+                    {resort.location.address}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Description */}
+              {resort.description && (
+                <View className="mb-4">
+                  <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 8 }}>
+                    About this resort
+                  </Text>
+                  <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 20 }}>
+                    {resort.description}
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : null}
+
+          {/* Amenities */}
+          {amenities.length > 0 && (
+            <View className="mb-4">
+              <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 8 }}>
+                Amenities
               </Text>
-              <Text className="text-base text-gray-700 leading-6">
-                {resort.description}
-              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {amenities.map((amenity) => (
+                  <View key={amenity._id} className="bg-gray-50 px-3 py-2 rounded-lg flex-row items-center">
+                    <Star color="#6B7280" size={14} />
+                    <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#4B5563', marginLeft: 6 }}>{amenity.name}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
 
-          {/* Amenities */}
-          <View className="mb-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
-              Amenities
-            </Text>
-            <View className="flex-row flex-wrap">
-              {[
-                { icon: Wifi, name: 'Free WiFi' },
-                { icon: Car, name: 'Parking' },
-                { icon: Coffee, name: 'Restaurant' },
-                { icon: Waves, name: 'Pool' },
-              ].map((amenity, index) => (
-                <View key={index} className="flex-row items-center mr-6 mb-3">
-                  <amenity.icon color="#6B7280" size={16} />
-                  <Text className="text-sm text-gray-600 ml-2">{amenity.name}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
           {/* Rooms Available */}
-          <View className="mb-6">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-semibold text-gray-900">
+          <View className="mb-4">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827' }}>
                 Available Rooms ({rooms.filter(room => room.status === 'available').length})
               </Text>
               {rooms.length > 0 && (
                 <TouchableOpacity onPress={handleViewAllRooms}>
-                  <Text className="text-blue-600 font-medium">View All</Text>
+                  <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#1F2937' }}>View All</Text>
                 </TouchableOpacity>
               )}
             </View>
             
             {rooms.length > 0 ? (
-              <View className="space-y-4">
+              <View className="gap-3">
                 {rooms
                   .filter(room => room.status === 'available')
                   .slice(0, 3)
                   .map((room) => (
-                  <View key={room._id} className="bg-gray-50 rounded-lg p-4">
-                    <View className="flex-row justify-between items-start mb-3">
+                  <TouchableOpacity 
+                    key={room._id}
+                    onPress={() => room.status === 'available' ? handleBookRoom(room) : null}
+                    disabled={room.status !== 'available'}
+                    activeOpacity={0.7}
+                    className={`rounded-xl p-3 border ${
+                      room.status === 'available' 
+                        ? 'bg-white border-gray-200' 
+                        : 'bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <View className="flex-row justify-between items-start">
                       <View className="flex-1">
-                        <Text className="text-lg font-semibold text-gray-900 mb-1">
+                        <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 4 }}>
                           {room.room_type}
                         </Text>
-                        <View className="flex-row items-center mb-2">
-                          <Users color="#6B7280" size={16} />
-                          <Text className="text-sm text-gray-600 ml-2">
+                        <View className="flex-row items-center">
+                          <Users color="#6B7280" size={13} />
+                          <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 4 }}>
                             Up to {room.capacity} guests
                           </Text>
                         </View>
-                        <View className="flex-row items-center">
-                          <View className={`px-2 py-1 rounded-full ${
-                            room.status === 'available' 
-                              ? 'bg-green-100' 
-                              : room.status === 'occupied'
-                              ? 'bg-red-100'
-                              : 'bg-yellow-100'
-                          }`}>
-                            <Text className={`text-xs font-medium ${
-                              room.status === 'available'
-                                ? 'text-green-800'
-                                : room.status === 'occupied'
-                                ? 'text-red-800'
-                                : 'text-yellow-800'
-                            }`}>
-                              {room.status === 'available' ? 'Available' : 
-                               room.status === 'occupied' ? 'Occupied' : 
-                               room.status.charAt(0).toUpperCase() + room.status.slice(1)}
+                        {room.status !== 'available' && (
+                          <View className="bg-gray-200 px-2 py-1 rounded-lg mt-2 self-start">
+                            <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>
+                              Not Available
                             </Text>
                           </View>
-                        </View>
+                        )}
                       </View>
                       
                       <View className="items-end">
-                        <Text className="text-xl font-bold text-gray-900">
-                          ${room.price_per_night}
+                        <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                          ₱{room.price_per_night.toLocaleString()}
                         </Text>
-                        <Text className="text-sm text-gray-600">per night</Text>
+                        <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>/night</Text>
                       </View>
                     </View>
-                    
-                    {room.status === 'available' ? (
-                      <TouchableOpacity 
-                        onPress={() => handleBookRoom(room)}
-                        className="bg-gray-900 py-3 px-4 rounded-lg"
-                      >
-                        <Text className="text-white font-semibold text-center">
-                          Select Room
-                        </Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <View className="bg-gray-200 py-3 px-4 rounded-lg">
-                        <Text className="text-gray-500 font-medium text-center">
-                          Not Available
-                        </Text>
-                      </View>
-                    )}
-                  </View>
+                  </TouchableOpacity>
                 ))}
                 
                 {rooms.filter(room => room.status === 'available').length > 3 && (
                   <TouchableOpacity 
                     onPress={handleViewAllRooms}
-                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2"
+                    className="bg-gray-50 border border-gray-200 rounded-xl p-3"
                   >
-                    <Text className="text-blue-600 font-semibold text-center">
+                    <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#1F2937', textAlign: 'center' }}>
                       View {rooms.filter(room => room.status === 'available').length - 3} More Rooms
                     </Text>
                   </TouchableOpacity>
                 )}
               </View>
             ) : (
-              <View className="bg-gray-50 rounded-lg p-6 items-center">
-                <Text className="text-gray-600 text-center">
+              <View className="bg-gray-50 rounded-xl p-6 items-center">
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center' }}>
                   No rooms available at this resort
                 </Text>
               </View>
             )}
           </View>
 
-          {/* Location */}
-          <View className="mb-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
-              Location
-            </Text>
-            <View className="bg-gray-100 rounded-lg p-4">
-              <Text className="text-base text-gray-700 mb-2">
-                {resort.location.address}
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Coordinates: {resort.location.latitude.toFixed(6)}, {resort.location.longitude.toFixed(6)}
-              </Text>
-              {/* TODO: Add map view here */}
-            </View>
-          </View>
-
-          {/* Contact Info */}
-          <View className="mb-8">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
-              Contact Resort
-            </Text>
-            <View className="space-y-3">
-              <TouchableOpacity 
-                onPress={() => Alert.alert('Call', 'Calling functionality will be implemented soon!')}
-                className="flex-row items-center py-3 px-4 bg-gray-50 rounded-lg"
-              >
-                <Phone color="#6B7280" size={20} />
-                <Text className="text-base text-gray-700 ml-3">Call Resort</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                onPress={handleSendMessage}
-                className="flex-row items-center py-3 px-4 rounded-lg bg-blue-50 border border-blue-200"
-              >
-                <MessageCircle color="#3B82F6" size={20} />
-                <Text className="text-base ml-3 text-blue-700 font-medium">
-                  Send Message to Resort
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
       </ScrollView>
 
       {/* Fixed Bottom Bar */}
-      <View className="bg-white border-t border-gray-200 px-5 py-4">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-sm text-gray-600">Starting from</Text>
-            <Text className="text-2xl font-bold text-gray-900">
-              ${rooms.length > 0 ? Math.min(...rooms.map(room => room.price_per_night)) : '150'}
-              <Text className="text-base font-normal">/night</Text>
-            </Text>
+      <View className="bg-white border-t border-gray-200 px-4 py-3">
+        {loading ? (
+          /* Skeleton for bottom bar */
+          <View className="flex-row items-center justify-between">
+            <View>
+              <View className="h-3 w-20 bg-gray-200 rounded mb-2" />
+              <View className="h-6 w-32 bg-gray-200 rounded" />
+            </View>
+            <View className="flex-row gap-2">
+              <View className="h-10 w-24 bg-gray-200 rounded-lg" />
+              <View className="h-10 w-28 bg-gray-200 rounded-lg" />
+            </View>
           </View>
-          
-          <View className="flex-row space-x-3">
-            <TouchableOpacity 
-              onPress={handleSendMessage}
-              className="bg-gray-100 px-6 py-3 rounded-lg"
-            >
-              <Text className="text-base font-semibold text-gray-700">Message</Text>
-            </TouchableOpacity>
+        ) : (
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>Starting from</Text>
+              <Text style={{ fontSize: 20, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                ₱{rooms.length > 0 ? Math.min(...rooms.map(room => room.price_per_night)).toLocaleString() : '1,500'}
+                <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>/night</Text>
+              </Text>
+            </View>
             
-            <TouchableOpacity 
-              onPress={handleBookNow}
-              className="bg-gray-900 px-6 py-3 rounded-lg"
-            >
-              <Text className="text-base font-semibold text-white">Book Now</Text>
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              <TouchableOpacity 
+                onPress={handleSendMessage}
+                disabled={!resort}
+                className="bg-gray-100 px-4 py-2.5 rounded-lg"
+              >
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#4B5563' }}>Message</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={handleBookNow}
+                disabled={!resort}
+                className="bg-[#1F2937] px-5 py-2.5 rounded-lg"
+              >
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#FFFFFF' }}>Book Now</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </SafeAreaView>
   );
