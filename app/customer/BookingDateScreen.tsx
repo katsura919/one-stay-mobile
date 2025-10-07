@@ -256,149 +256,147 @@ export default function BookingDateScreen() {
     });
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1F2937" />
-          <Text className="text-gray-600 mt-4">Loading room details...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-100">
-        <TouchableOpacity onPress={handleBack} className="p-2">
-          <ChevronLeft color="#374151" size={24} />
+      <View className="bg-white flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity onPress={handleBack} className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center">
+          <ChevronLeft color="#1F2937" size={20} />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-gray-900">Select Dates</Text>
-        <View className="w-8" />
+        <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>Select Dates</Text>
+        <View className="w-9" />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Room Info */}
-        <View className="px-5 py-4 bg-gray-50">
-          <Text className="text-lg font-semibold text-gray-900 mb-1">
-            {roomType || room?.room_type}
-          </Text>
-          <Text className="text-gray-600">
-            {resortName} • Up to {capacity || room?.capacity} guests
-          </Text>
-          <Text className="text-lg font-bold text-gray-900 mt-2">
-            ${pricePerNight || room?.price_per_night}/night
-          </Text>
-        </View>
+        {loading ? (
+          <View className="px-4 py-3 bg-white border-b border-gray-200">
+            <View className="h-5 w-48 bg-gray-200 rounded-lg mb-2" />
+            <View className="h-4 w-64 bg-gray-200 rounded-lg mb-2" />
+            <View className="h-5 w-32 bg-gray-200 rounded-lg" />
+          </View>
+        ) : (
+          <View className="px-4 py-3 bg-white border-b border-gray-200">
+            <Text style={{ fontSize: 17, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 2 }}>
+              {roomType || room?.room_type}
+            </Text>
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>
+              {resortName} • Up to {capacity || room?.capacity} guests
+            </Text>
+            <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827', marginTop: 6 }}>
+              ₱{(pricePerNight || room?.price_per_night)?.toLocaleString()}/night
+            </Text>
+          </View>
+        )}
 
         {/* Date Selection Summary */}
-        <View className="px-5 py-4">
-          <View className="flex-row justify-between">
-            <TouchableOpacity className="flex-1 mr-2 p-4 border border-gray-200 rounded-lg">
-              <Text className="text-sm text-gray-600 mb-1">CHECK-IN</Text>
-              <Text className="text-lg font-semibold text-gray-900">
+        <View className="px-4 py-3">
+          <View className="flex-row gap-2">
+            <View className="flex-1 p-3 bg-white border border-gray-200 rounded-xl">
+              <Text style={{ fontSize: 10, fontFamily: 'Roboto-Medium', color: '#6B7280', marginBottom: 4, letterSpacing: 0.5 }}>CHECK-IN</Text>
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#111827' }}>
                 {checkInDate ? formatDate(checkInDate) : 'Select date'}
               </Text>
-            </TouchableOpacity>
+            </View>
             
-            <TouchableOpacity className="flex-1 ml-2 p-4 border border-gray-200 rounded-lg">
-              <Text className="text-sm text-gray-600 mb-1">CHECK-OUT</Text>
-              <Text className="text-lg font-semibold text-gray-900">
+            <View className="flex-1 p-3 bg-white border border-gray-200 rounded-xl">
+              <Text style={{ fontSize: 10, fontFamily: 'Roboto-Medium', color: '#6B7280', marginBottom: 4, letterSpacing: 0.5 }}>CHECK-OUT</Text>
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#111827' }}>
                 {checkOutDate ? formatDate(checkOutDate) : 'Select date'}
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Calendar */}
-        <View className="px-5">
-          <Calendar
+        <View className="px-4 mb-2">
+          <View className="bg-white rounded-xl overflow-hidden border border-gray-200">
+            <Calendar
             onDayPress={handleDayPress}
             markedDates={markedDates}
             markingType={'period'}
             minDate={new Date().toISOString().split('T')[0]}
-            theme={{
-              backgroundColor: '#ffffff',
-              calendarBackground: '#ffffff',
-              textSectionTitleColor: '#6B7280',
-              textSectionTitleDisabledColor: '#D1D5DB',
-              selectedDayBackgroundColor: '#1F2937',
-              selectedDayTextColor: '#ffffff',
-              todayTextColor: '#1F2937',
-              dayTextColor: '#374151',
-              textDisabledColor: '#9CA3AF',
-              dotColor: '#1F2937',
-              selectedDotColor: '#ffffff',
-              arrowColor: '#1F2937',
-              disabledArrowColor: '#D1D5DB',
-              monthTextColor: '#1F2937',
-              indicatorColor: '#1F2937',
-              textDayFontFamily: 'System',
-              textMonthFontFamily: 'System',
-              textDayHeaderFontFamily: 'System',
-              textDayFontWeight: '400',
-              textMonthFontWeight: '600',
-              textDayHeaderFontWeight: '500',
-              textDayFontSize: 16,
-              textMonthFontSize: 18,
-              textDayHeaderFontSize: 14
-            }}
-            style={{
-              borderRadius: 12,
-              paddingBottom: 16
-            }}
-            enableSwipeMonths={true}
-            hideExtraDays={true}
-            firstDay={0}
-          />
+              theme={{
+                backgroundColor: '#ffffff',
+                calendarBackground: '#ffffff',
+                textSectionTitleColor: '#6B7280',
+                textSectionTitleDisabledColor: '#D1D5DB',
+                selectedDayBackgroundColor: '#1F2937',
+                selectedDayTextColor: '#ffffff',
+                todayTextColor: '#1F2937',
+                dayTextColor: '#374151',
+                textDisabledColor: '#9CA3AF',
+                dotColor: '#1F2937',
+                selectedDotColor: '#ffffff',
+                arrowColor: '#1F2937',
+                disabledArrowColor: '#D1D5DB',
+                monthTextColor: '#1F2937',
+                indicatorColor: '#1F2937',
+                textDayFontFamily: 'Roboto',
+                textMonthFontFamily: 'Roboto-Bold',
+                textDayHeaderFontFamily: 'Roboto-Medium',
+                textDayFontWeight: '400',
+                textMonthFontWeight: '700',
+                textDayHeaderFontWeight: '500',
+                textDayFontSize: 14,
+                textMonthFontSize: 16,
+                textDayHeaderFontSize: 12
+              }}
+              style={{
+                paddingTop: 8,
+                paddingBottom: 12
+              }}
+              enableSwipeMonths={true}
+              hideExtraDays={true}
+              firstDay={0}
+            />
+          </View>
         </View>
 
         {/* Legend */}
-        <View className="px-5 py-4">
-          <View className="flex-row flex-wrap">
-            <View className="flex-row items-center mr-6 mb-2">
-              <View className="w-4 h-4 bg-gray-900 rounded mr-2" />
-              <Text className="text-sm text-gray-600">Selected</Text>
+        <View className="px-4 py-3">
+          <View className="flex-row flex-wrap gap-4">
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 bg-[#1F2937] rounded mr-2" />
+              <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>Selected</Text>
             </View>
-            <View className="flex-row items-center mr-6 mb-2">
-              <View className="w-4 h-4 bg-red-200 rounded mr-2" />
-              <Text className="text-sm text-gray-600">Booked</Text>
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 bg-red-200 rounded mr-2" />
+              <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>Booked</Text>
             </View>
-            <View className="flex-row items-center mb-2">
-              <View className="w-4 h-4 bg-gray-100 rounded mr-2" />
-              <Text className="text-sm text-gray-600">In range</Text>
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 bg-gray-100 rounded mr-2" />
+              <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>In range</Text>
             </View>
           </View>
         </View>
 
         {/* Availability Result */}
         {checkingAvailability && (
-          <View className="px-5 py-4">
-            <View className="flex-row items-center justify-center p-4 bg-blue-50 rounded-lg">
-              <ActivityIndicator size="small" color="#3B82F6" className="mr-3" />
-              <Text className="text-blue-700">Checking availability...</Text>
+          <View className="px-4 py-2">
+            <View className="flex-row items-center justify-center p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <ActivityIndicator size="small" color="#3B82F6" style={{ marginRight: 8 }} />
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#1E40AF' }}>Checking availability...</Text>
             </View>
           </View>
         )}
 
         {availabilityResult && checkInDate && checkOutDate && (
-          <View className="px-5 py-4">
-            <View className={`p-4 rounded-lg ${
-              availabilityResult.available ? 'bg-green-50' : 'bg-red-50'
+          <View className="px-4 py-2">
+            <View className={`p-3 rounded-xl border ${
+              availabilityResult.available ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'
             }`}>
-              <Text className={`font-semibold ${
-                availabilityResult.available ? 'text-green-800' : 'text-red-800'
-              }`}>
-                {availabilityResult.available ? 'Available!' : 'Not Available'}
+              <Text style={{
+                fontSize: 14,
+                fontFamily: 'Roboto-Bold',
+                color: availabilityResult.available ? '#166534' : '#991B1B'
+              }}>
+                {availabilityResult.available ? '✓ Available!' : '✕ Not Available'}
               </Text>
               {availabilityResult.available && (
-                <View className="mt-2">
-                  <Text className="text-green-700">
-                    {availabilityResult.booking_details.nights} nights • 
-                    ${availabilityResult.booking_details.total_price} total
-                  </Text>
-                </View>
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#166534', marginTop: 4 }}>
+                  {availabilityResult.booking_details.nights} night{availabilityResult.booking_details.nights !== 1 ? 's' : ''} • ₱{availabilityResult.booking_details.total_price.toLocaleString()} total
+                </Text>
               )}
             </View>
           </View>
@@ -408,18 +406,18 @@ export default function BookingDateScreen() {
       </ScrollView>
 
       {/* Continue Button */}
-      <View className="px-5 py-4 border-t border-gray-100">
+      <View className="bg-white px-4 py-3 border-t border-gray-200">
         <TouchableOpacity
           onPress={handleContinue}
           disabled={!checkInDate || !checkOutDate || !availabilityResult?.available || checkingAvailability}
-          className={`py-4 rounded-lg items-center ${
+          className={`py-3 rounded-xl items-center ${
             checkInDate && checkOutDate && availabilityResult?.available && !checkingAvailability
-              ? 'bg-gray-900'
+              ? 'bg-[#1F2937]'
               : 'bg-gray-300'
           }`}
         >
-          <Text className="text-white font-semibold text-lg">
-            Continue
+          <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#FFFFFF' }}>
+            Continue to Booking
           </Text>
         </TouchableOpacity>
       </View>

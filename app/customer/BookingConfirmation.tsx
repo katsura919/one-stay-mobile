@@ -106,109 +106,108 @@ export default function BookingConfirmationScreen() {
   };
 
   const formatCurrency = (amount: string): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(parseFloat(amount));
+    return `₱${parseFloat(amount).toLocaleString()}`;
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-100">
-        <TouchableOpacity onPress={handleBack} className="p-2">
-          <ChevronLeft color="#374151" size={24} />
+      <View className="bg-white flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity onPress={handleBack} className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center">
+          <ChevronLeft color="#1F2937" size={20} />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-gray-900">Confirm Booking</Text>
-        <View className="w-8" />
+        <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>Confirm Booking</Text>
+        <View className="w-9" />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Resort & Room Info */}
-        <View className="px-5 py-6 border-b border-gray-100">
+        <View className="bg-white px-4 py-4 border-b border-gray-200 mb-2">
           <View className="flex-row items-start">
-            <View className="w-20 h-20 bg-gray-200 rounded-lg mr-4">
-              {/* Room Image Placeholder */}
-              <View className="flex-1 items-center justify-center">
-                <MapPin color="#6B7280" size={24} />
-              </View>
+            <View className="w-16 h-16 bg-gray-100 rounded-xl mr-3 items-center justify-center">
+              <MapPin color="#6B7280" size={20} />
             </View>
             <View className="flex-1">
-              <Text className="text-xl font-bold text-gray-900 mb-1">
+              <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 2 }}>
                 {roomType}
               </Text>
-              <Text className="text-gray-600 mb-2">{resortName}</Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', marginBottom: 6 }}>{resortName}</Text>
               <View className="flex-row items-center">
-                <Users color="#6B7280" size={16} />
-                <Text className="text-gray-600 ml-1">Up to {capacity} guests</Text>
+                <Users color="#6B7280" size={14} />
+                <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 4 }}>Up to {capacity} guests</Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Trip Details */}
-        <View className="px-5 py-6 border-b border-gray-100">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Your trip</Text>
+        <View className="bg-white px-4 py-4 border-b border-gray-200 mb-2">
+          <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 12 }}>Your trip</Text>
           
-          <View className="space-y-4">
+          <View className="gap-3">
             {/* Dates */}
-            <View className="flex-row items-center">
-              <Calendar color="#374151" size={20} />
+            <View className="flex-row items-start">
+              <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center">
+                <Calendar color="#6B7280" size={16} />
+              </View>
               <View className="ml-3 flex-1">
-                <Text className="text-gray-900 font-medium">Dates</Text>
-                <Text className="text-gray-600">
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151', marginBottom: 2 }}>Dates</Text>
+                <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 18 }}>
                   {formatDate(checkInDate as string)} - {formatDate(checkOutDate as string)}
                 </Text>
               </View>
             </View>
 
             {/* Duration */}
-            <View className="flex-row items-center">
-              <Clock color="#374151" size={20} />
+            <View className="flex-row items-start">
+              <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center">
+                <Clock color="#6B7280" size={16} />
+              </View>
               <View className="ml-3 flex-1">
-                <Text className="text-gray-900 font-medium">Duration</Text>
-                <Text className="text-gray-600">
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151', marginBottom: 2 }}>Duration</Text>
+                <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>
                   {nights} {parseInt(nights as string) === 1 ? 'night' : 'nights'}
                 </Text>
               </View>
             </View>
 
             {/* Guests */}
-            <View className="flex-row items-center">
-              <Users color="#374151" size={20} />
+            <View className="flex-row items-start">
+              <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center">
+                <Users color="#6B7280" size={16} />
+              </View>
               <View className="ml-3 flex-1">
-                <Text className="text-gray-900 font-medium">Guests</Text>
-                <Text className="text-gray-600">{capacity} guests</Text>
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151', marginBottom: 2 }}>Guests</Text>
+                <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>{capacity} guests</Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Pricing Breakdown */}
-        <View className="px-5 py-6 border-b border-gray-100">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Price details</Text>
+        <View className="bg-white px-4 py-4 border-b border-gray-200 mb-2">
+          <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 12 }}>Price details</Text>
           
-          <View className="space-y-3">
+          <View className="gap-2">
             <View className="flex-row justify-between items-center">
-              <Text className="text-gray-700">
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280' }}>
                 {formatCurrency(pricePerNight as string)} x {nights} nights
               </Text>
-              <Text className="text-gray-900">
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151' }}>
                 {formatCurrency(totalPrice as string)}
               </Text>
             </View>
 
             {/* Add service fee if needed */}
             <View className="flex-row justify-between items-center">
-              <Text className="text-gray-700">Service fee</Text>
-              <Text className="text-gray-900">$0</Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280' }}>Service fee</Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151' }}>₱0</Text>
             </View>
 
-            <View className="border-t border-gray-200 pt-3">
+            <View className="border-t border-gray-200 pt-3 mt-1">
               <View className="flex-row justify-between items-center">
-                <Text className="text-lg font-semibold text-gray-900">Total (USD)</Text>
-                <Text className="text-lg font-bold text-gray-900">
+                <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#111827' }}>Total (PHP)</Text>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>
                   {formatCurrency(totalPrice as string)}
                 </Text>
               </View>
@@ -217,30 +216,30 @@ export default function BookingConfirmationScreen() {
         </View>
 
         {/* Booking Terms */}
-        <View className="px-5 py-6 border-b border-gray-100">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Booking terms</Text>
-          <View className="space-y-3">
-            <Text className="text-gray-700">
+        <View className="bg-white px-4 py-4 border-b border-gray-200 mb-2">
+          <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 12 }}>Booking terms</Text>
+          <View className="gap-2">
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 18 }}>
               • Your reservation is pending owner approval
             </Text>
-            <Text className="text-gray-700">
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 18 }}>
               • You will receive a notification once the owner reviews your request
             </Text>
-            <Text className="text-gray-700">
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 18 }}>
               • Cancellation is free up to 24 hours before check-in
             </Text>
-            <Text className="text-gray-700">
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', lineHeight: 18 }}>
               • Payment will be processed only after the reservation is approved
             </Text>
           </View>
         </View>
 
         {/* Guest Info */}
-        <View className="px-5 py-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Guest information</Text>
-          <View className="p-4 bg-gray-50 rounded-lg">
-            <Text className="text-gray-900 font-medium">{user?.name || 'Guest'}</Text>
-            <Text className="text-gray-600">{user?.email}</Text>
+        <View className="bg-white px-4 py-4">
+          <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 12 }}>Guest information</Text>
+          <View className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+            <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: '#111827', marginBottom: 2 }}>{user?.name || 'Guest'}</Text>
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>{user?.email}</Text>
           </View>
         </View>
 
@@ -248,30 +247,30 @@ export default function BookingConfirmationScreen() {
       </ScrollView>
 
       {/* Book Now Button */}
-      <View className="px-5 py-4 border-t border-gray-100 bg-white">
+      <View className="px-4 py-3 border-t border-gray-200 bg-white">
         <TouchableOpacity
           onPress={handleBookNow}
           disabled={loading}
-          className={`py-4 rounded-lg items-center flex-row justify-center ${
-            loading ? 'bg-gray-400' : 'bg-gray-900'
+          className={`py-3 rounded-xl items-center flex-row justify-center ${
+            loading ? 'bg-gray-400' : 'bg-[#1F2937]'
           }`}
         >
           {loading ? (
             <>
-              <ActivityIndicator size="small" color="white" className="mr-2" />
-              <Text className="text-white font-semibold text-lg">Submitting...</Text>
+              <ActivityIndicator size="small" color="white" style={{ marginRight: 8 }} />
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#FFFFFF' }}>Submitting...</Text>
             </>
           ) : (
             <>
-              <CreditCard color="white" size={20} className="mr-2" />
-              <Text className="text-white font-semibold text-lg ml-2">
+              <CreditCard color="white" size={18} style={{ marginRight: 8 }} />
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#FFFFFF' }}>
                 Request to Book
               </Text>
             </>
           )}
         </TouchableOpacity>
         
-        <Text className="text-center text-gray-500 text-sm mt-2">
+        <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#9CA3AF', textAlign: 'center', marginTop: 8 }}>
           No payment required until approved
         </Text>
       </View>

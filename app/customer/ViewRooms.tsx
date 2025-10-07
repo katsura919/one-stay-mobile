@@ -68,123 +68,130 @@ export default function CustomerViewRooms() {
     });
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1F2937" />
-          <Text className="text-gray-600 mt-4">Loading available rooms...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
-        <TouchableOpacity onPress={handleBack} className="p-2">
-          <ChevronLeft color="#374151" size={24} />
+      <View className="bg-white flex-row items-center px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity onPress={handleBack} className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center">
+          <ChevronLeft color="#1F2937" size={20} />
         </TouchableOpacity>
         <View className="flex-1 ml-3">
-          <Text className="text-lg font-semibold text-gray-900">
-            {resort?.resort_name || resortName || 'Resort'}
+          <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+            {loading ? 'Loading...' : resort?.resort_name || resortName || 'Resort'}
           </Text>
-          <Text className="text-sm text-gray-600">
-            {rooms.length} available room{rooms.length !== 1 ? 's' : ''}
-          </Text>
+          {!loading && (
+            <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280' }}>
+              {rooms.length} available room{rooms.length !== 1 ? 's' : ''}
+            </Text>
+          )}
         </View>
       </View>
 
-      {rooms.length === 0 ? (
+      {loading ? (
+        /* Loading Skeleton */
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="px-4 py-4">
+            <View className="h-4 w-3/4 bg-gray-200 rounded-lg mb-6" />
+            {[1, 2, 3].map((i) => (
+              <View key={i} className="bg-white border border-gray-200 rounded-xl p-4 mb-3">
+                <View className="flex-row justify-between mb-3">
+                  <View className="flex-1">
+                    <View className="h-5 w-32 bg-gray-200 rounded-lg mb-2" />
+                    <View className="h-4 w-24 bg-gray-200 rounded-lg mb-2" />
+                    <View className="h-4 w-28 bg-gray-200 rounded-lg" />
+                  </View>
+                  <View className="items-end">
+                    <View className="h-7 w-24 bg-gray-200 rounded-lg mb-1" />
+                    <View className="h-3 w-16 bg-gray-200 rounded-lg" />
+                  </View>
+                </View>
+                <View className="h-10 bg-gray-200 rounded-lg" />
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      ) : rooms.length === 0 ? (
         /* No Available Rooms */
         <View className="flex-1 justify-center items-center px-5">
-          <View className="bg-gray-50 rounded-full p-6 mb-6">
-            <Calendar color="#6B7280" size={48} />
+          <View className="bg-gray-100 rounded-full p-6 mb-4">
+            <Calendar color="#6B7280" size={40} />
           </View>
-          <Text className="text-xl font-semibold text-gray-900 mb-2 text-center">
+          <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 8, textAlign: 'center' }}>
             No Available Rooms
           </Text>
-          <Text className="text-gray-600 text-center mb-6">
+          <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center', marginBottom: 24 }}>
             All rooms are currently booked. Please check back later or contact the resort for availability.
           </Text>
           <TouchableOpacity
             onPress={handleBack}
-            className="bg-gray-900 px-6 py-3 rounded-lg"
+            className="bg-[#1F2937] px-6 py-2.5 rounded-lg"
           >
-            <Text className="text-white font-semibold">Go Back</Text>
+            <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#FFFFFF' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       ) : (
         /* Available Rooms List */
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-5 py-4">
-            <Text className="text-sm text-gray-600 mb-6">
+          <View className="px-4 py-4">
+            <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', marginBottom: 16 }}>
               Choose from our available rooms for your stay
             </Text>
             
             {rooms.map((room) => (
-              <View key={room._id} className="bg-white border border-gray-200 rounded-lg mb-4 overflow-hidden shadow-sm">
-                <View className="p-5">
-                  {/* Room Header */}
-                  <View className="flex-row justify-between items-start mb-4">
-                    <View className="flex-1">
-                      <Text className="text-lg font-semibold text-gray-900 mb-2">
-                        {room.room_type}
-                      </Text>
-                      
-                      <View className="flex-row items-center mb-2">
-                        <Users color="#6B7280" size={16} />
-                        <Text className="text-sm text-gray-600 ml-2">
-                          Up to {room.capacity} guests
-                        </Text>
-                      </View>
-
-                      <View className="flex-row items-center">
-                        <CheckCircle color="#10B981" size={16} />
-                        <Text className="text-sm text-green-700 ml-2 font-medium">
-                          Available now
-                        </Text>
-                      </View>
-                    </View>
+              <TouchableOpacity
+                key={room._id}
+                onPress={() => handleBookRoom(room)}
+                activeOpacity={0.7}
+                className="bg-white border border-gray-200 rounded-xl p-4 mb-3"
+              >
+                {/* Room Header */}
+                <View className="flex-row justify-between items-start mb-3">
+                  <View className="flex-1">
+                    <Text style={{ fontSize: 17, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 6 }}>
+                      {room.room_type}
+                    </Text>
                     
-                    <View className="items-end">
-                      <Text className="text-2xl font-bold text-gray-900">
-                        ${room.price_per_night}
+                    <View className="flex-row items-center mb-2">
+                      <Users color="#6B7280" size={14} />
+                      <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 6 }}>
+                        Up to {room.capacity} guests
                       </Text>
-                      <Text className="text-sm text-gray-600">per night</Text>
+                    </View>
+
+                    <View className="flex-row items-center">
+                      <CheckCircle color="#10B981" size={14} />
+                      <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#059669', marginLeft: 6 }}>
+                        Available now
+                      </Text>
                     </View>
                   </View>
-
-                  {/* Room Features */}
-                  <View className="border-t border-gray-100 pt-4 mb-4">
-                    <Text className="text-sm font-medium text-gray-900 mb-2">
-                      Room Features
+                  
+                  <View className="items-end">
+                    <Text style={{ fontSize: 20, fontFamily: 'Roboto-Bold', color: '#111827' }}>
+                      ₱{room.price_per_night.toLocaleString()}
                     </Text>
-                    <View className="flex-row flex-wrap">
-                      <View className="bg-gray-50 px-3 py-1 rounded-full mr-2 mb-2">
-                        <Text className="text-xs text-gray-700">Private Bathroom</Text>
-                      </View>
-                      <View className="bg-gray-50 px-3 py-1 rounded-full mr-2 mb-2">
-                        <Text className="text-xs text-gray-700">Free WiFi</Text>
-                      </View>
-                      <View className="bg-gray-50 px-3 py-1 rounded-full mr-2 mb-2">
-                        <Text className="text-xs text-gray-700">Air Conditioning</Text>
-                      </View>
-                    </View>
+                    <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>/night</Text>
                   </View>
-
-                  {/* Book Button */}
-                  <TouchableOpacity 
-                    onPress={() => handleBookRoom(room)}
-                    className="bg-gray-900 py-4 rounded-lg"
-                  >
-                    <Text className="text-white font-semibold text-center text-lg">
-                      Book This Room
-                    </Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
+
+                {/* Room Features */}
+                <View className="border-t border-gray-100 pt-3">
+                  <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#374151', marginBottom: 6 }}>
+                    Room Features
+                  </Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
+                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Private Bathroom</Text>
+                    </View>
+                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
+                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Free WiFi</Text>
+                    </View>
+                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
+                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Air Conditioning</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
           
