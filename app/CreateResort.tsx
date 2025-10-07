@@ -198,7 +198,7 @@ export default function CreateResortScreen() {
         [
           {
             text: 'Continue to Dashboard',
-            onPress: () => router.replace('/owner/(owner-tabs)/Dashboard')
+            onPress: () => router.replace('/owner/(owner-tabs)/ResortScreen')
           }
         ]
       );

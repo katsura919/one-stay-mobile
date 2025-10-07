@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, StatusBar } from 'react-native';
 
 import CategoryTabs from '../../../components/CategoryTabs';
 import ExplorePlaces from '../../../components/ExplorePlaces';
@@ -22,9 +22,9 @@ export default function HomeScreen() {
   // Default fallback home screen (for guests or users without specific roles)
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
       <ScrollView showsVerticalScrollIndicator={false}>
         <Header />
-        <ExplorePlaces />
         <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
         <HotelCardList />
         <View className="mb-24" />
