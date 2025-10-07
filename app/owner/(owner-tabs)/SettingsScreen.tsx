@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Alert } from 'react-native';
-import { Card, List, Switch, Button, Avatar, Divider } from 'react-native-paper';
-import { User, Bell, Shield, HelpCircle, LogOut, Edit, MapPin } from 'lucide-react-native';
+import { ScrollView, View, Text, Alert, TouchableOpacity } from 'react-native';
+import { User, Bell, Shield, HelpCircle, LogOut, Lock, FileText, ChevronRight, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
-  const [notifications, setNotifications] = useState({
-    bookings: true,
-    messages: true,
-    reviews: true,
-    marketing: false
-  });
 
   const handleLogout = () => {
     Alert.alert(
@@ -30,145 +23,116 @@ export default function SettingsScreen() {
     );
   };
 
-  const ProfileSection = () => (
-    <Card className="mb-6">
-      <Card.Content className="py-6">
-        <View className="flex-row items-center">
-          <Avatar.Image 
-            size={80} 
-            source={{ uri: user?.avatar || 'https://randomuser.me/api/portraits/men/45.jpg' }}
-          />
-          <View className="flex-1 ml-4">
-            <Text className="text-xl font-bold text-gray-900 mb-1">
-              {user?.name || 'Property Owner'}
-            </Text>
-            <View className="flex-row items-center mb-2">
-              <MapPin size={16} color="#6B7280" />
-              <Text className="ml-1 text-sm text-gray-600">{user?.email}</Text>
-            </View>
-            <Text className="text-sm text-pink-600 font-medium">
-              {user?.role === 'owner' ? 'Property Owner' : 'Customer'}
-            </Text>
-          </View>
-        </View>
-        <Button 
-          mode="outlined" 
-          icon={({ size }) => <Edit size={size} />}
-          className="mt-4"
-          onPress={() => {/* Navigate to edit profile */}}
-        >
-          Edit Profile
-        </Button>
-      </Card.Content>
-    </Card>
-  );
+  const settingsSections = [
+    {
+      title: 'Account',
+      items: [
+        {
+          icon: User,
+          label: 'Edit Profile',
+          onPress: () => Alert.alert('Edit Profile', 'Profile editing coming soon!'),
+        },
+        {
+          icon: Lock,
+          label: 'Change Password',
+          onPress: () => Alert.alert('Change Password', 'Password change coming soon!'),
+        },
+      ]
+    },
 
-  const NotificationSettings = () => (
-    <Card className="mb-6">
-      <Card.Content>
-        <Text className="text-lg font-semibold text-gray-900 mb-4">Notifications</Text>
-        <View>
-          <View className="flex-row justify-between items-center py-3">
-            <View className="flex-row items-center">
-              <Bell size={20} color="#6B7280" />
-              <Text className="ml-3 text-gray-900">Booking Updates</Text>
-            </View>
-            <Switch 
-              value={notifications.bookings}
-              onValueChange={(value) => setNotifications(prev => ({ ...prev, bookings: value }))}
-            />
-          </View>
-          <Divider />
-          <View className="flex-row justify-between items-center py-3">
-            <View className="flex-row items-center">
-              <Bell size={20} color="#6B7280" />
-              <Text className="ml-3 text-gray-900">New Messages</Text>
-            </View>
-            <Switch 
-              value={notifications.messages}
-              onValueChange={(value) => setNotifications(prev => ({ ...prev, messages: value }))}
-            />
-          </View>
-          <Divider />
-          <View className="flex-row justify-between items-center py-3">
-            <View className="flex-row items-center">
-              <Bell size={20} color="#6B7280" />
-              <Text className="ml-3 text-gray-900">Review Notifications</Text>
-            </View>
-            <Switch 
-              value={notifications.reviews}
-              onValueChange={(value) => setNotifications(prev => ({ ...prev, reviews: value }))}
-            />
-          </View>
-          <Divider />
-          <View className="flex-row justify-between items-center py-3">
-            <View className="flex-row items-center">
-              <Bell size={20} color="#6B7280" />
-              <Text className="ml-3 text-gray-900">Marketing Emails</Text>
-            </View>
-            <Switch 
-              value={notifications.marketing}
-              onValueChange={(value) => setNotifications(prev => ({ ...prev, marketing: value }))}
-            />
-          </View>
-        </View>
-      </Card.Content>
-    </Card>
-  );
+    {
+      title: 'Support',
+      items: [
+        {
+          icon: HelpCircle,
+          label: 'Help Center',
+          onPress: () => Alert.alert('Help Center', 'Help center coming soon!'),
+        },
+        {
+          icon: Shield,
+          label: 'Privacy & Security',
+          onPress: () => Alert.alert('Privacy & Security', 'Privacy settings coming soon!'),
+        },
+        {
+          icon: FileText,
+          label: 'Terms & Policies',
+          onPress: () => Alert.alert('Terms & Policies', 'Terms and policies coming soon!'),
+        },
+      ]
+    }
+  ];
 
   return (
     <View className="flex-1 bg-gray-50">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View className="px-6 pt-12 pb-4">
-          <Text className="text-2xl font-bold text-gray-900">Settings</Text>
-        </View>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-4 py-4">
+          {/* User Info */}
+          <View className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+            <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 2 }}>
+              {user?.name || 'Property Owner'}
+            </Text>
+            <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280' }}>
+              {user?.email}
+            </Text>
+            <View className="mt-2 bg-blue-50 rounded-lg px-2.5 py-1.5 self-start">
+              <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#1F2937' }}>
+                Property Owner
+              </Text>
+            </View>
+          </View>
 
-        <View className="px-6">
-          <ProfileSection />
-          <NotificationSettings />
+          {/* Settings Sections */}
+          {settingsSections.map((section, sectionIndex) => (
+            <View key={sectionIndex} className="mb-4">
+              <Text style={{ fontSize: 12, fontFamily: 'Roboto-Bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginLeft: 4 }}>
+                {section.title}
+              </Text>
+              <View className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {section.items.map((item, itemIndex) => (
+                  <TouchableOpacity
+                    key={itemIndex}
+                    onPress={item.onPress}
+                    className={`flex-row items-center px-4 py-3 ${
+                      itemIndex !== section.items.length - 1 ? 'border-b border-gray-100' : ''
+                    }`}
+                    activeOpacity={0.7}
+                  >
+                    <View className="w-9 h-9 bg-gray-50 rounded-lg items-center justify-center mr-3">
+                      <item.icon color="#6B7280" size={18} />
+                    </View>
+                    <Text style={{ fontSize: 14, fontFamily: 'Roboto', color: '#374151', flex: 1 }}>
+                      {item.label}
+                    </Text>
+                    <ChevronRight color="#9CA3AF" size={18} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          ))}
 
-          {/* Other Settings */}
-          <Card className="mb-6">
-            <Card.Content>
-              <Text className="text-lg font-semibold text-gray-900 mb-4">Account</Text>
-              <List.Item
-                title="Privacy & Security"
-                left={(props) => <Shield {...props} />}
-                right={(props) => <List.Icon {...props} icon="chevron-right" />}
-                onPress={() => {/* Navigate to privacy settings */}}
-              />
-              <Divider />
-              <List.Item
-                title="Help & Support"
-                left={(props) => <HelpCircle {...props} />}
-                right={(props) => <List.Icon {...props} icon="chevron-right" />}
-                onPress={() => {/* Navigate to help */}}
-              />
-              <Divider />
-              <List.Item
-                title="About OneStay"
-                left={(props) => <List.Icon {...props} icon="information" />}
-                right={(props) => <List.Icon {...props} icon="chevron-right" />}
-                onPress={() => {/* Navigate to about */}}
-              />
-            </Card.Content>
-          </Card>
-
-          {/* Logout */}
-          <Card className="mb-24">
-            <Card.Content>
-              <Button
-                mode="contained"
-                icon={({ size }) => <LogOut size={size} color="white" />}
-                buttonColor="#EF4444"
-                onPress={handleLogout}
-                className="py-2"
-              >
+          {/* Logout Button */}
+          <TouchableOpacity
+            onPress={handleLogout}
+            className="bg-white rounded-xl border border-red-200 overflow-hidden mb-6"
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-center px-4 py-3">
+              <View className="w-9 h-9 bg-red-50 rounded-lg items-center justify-center mr-3">
+                <LogOut color="#EF4444" size={18} />
+              </View>
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: '#EF4444', flex: 1 }}>
                 Logout
-              </Button>
-            </Card.Content>
-          </Card>
+              </Text>
+              <ChevronRight color="#EF4444" size={18} />
+            </View>
+          </TouchableOpacity>
+
+          {/* App Version */}
+          <View className="items-center py-4">
+            <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#9CA3AF' }}>
+              One Stay v1.0.0
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>
