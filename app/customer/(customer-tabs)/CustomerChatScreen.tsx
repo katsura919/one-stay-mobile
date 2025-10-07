@@ -355,11 +355,6 @@ export default function ChatScreen() {
       <View className="px-4 py-3 bg-white border-b border-gray-200">
         <View className="flex-row items-center justify-between">
           <Text style={{ fontSize: 22, fontFamily: 'Roboto-Bold', color: '#111827' }}>Messages</Text>
-          {!socketConnected && (
-            <View className="bg-red-50 px-2 py-1 rounded-lg">
-              <Text style={{ fontSize: 10, fontFamily: 'Roboto-Medium', color: '#DC2626' }}>Offline</Text>
-            </View>
-          )}
         </View>
       </View>
 

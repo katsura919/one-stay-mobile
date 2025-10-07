@@ -374,6 +374,75 @@ export default function ResortScreen() {
     );
   }
 
+  // Show skeleton loading
+  if (resortsLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {[1, 2].map((index) => (
+            <View key={index} className="mb-6">
+              {/* Skeleton Image */}
+              <View style={{ width: '100%', height: 220 }} className="bg-gray-200" />
+              
+              {/* Content Container */}
+              <View className="bg-white rounded-t-3xl px-5 pt-5 mx-0 -mt-4">
+                {/* Skeleton Title and Location */}
+                <View className="mb-3">
+                  <View className="bg-gray-200 h-7 w-3/4 rounded-lg mb-2" />
+                  <View className="bg-gray-200 h-4 w-1/2 rounded-lg" />
+                </View>
+                
+                {/* Skeleton Description */}
+                <View className="mb-4">
+                  <View className="bg-gray-200 h-4 w-full rounded-lg mb-2" />
+                  <View className="bg-gray-200 h-4 w-4/5 rounded-lg" />
+                </View>
+                
+                {/* Skeleton Stats */}
+                <View className="flex-row bg-gray-50 rounded-2xl p-3 mb-4">
+                  {[1, 2, 3, 4].map((stat) => (
+                    <React.Fragment key={stat}>
+                      <View className="items-center flex-1">
+                        <View className="bg-gray-200 h-5 w-12 rounded-lg mb-1" />
+                        <View className="bg-gray-200 h-3 w-16 rounded-lg" />
+                      </View>
+                      {stat < 4 && <View className="w-px bg-gray-300" />}
+                    </React.Fragment>
+                  ))}
+                </View>
+                
+                {/* Skeleton Amenities */}
+                <View className="mb-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <View className="bg-gray-200 h-5 w-24 rounded-lg" />
+                    <View className="bg-gray-100 rounded-full px-3 py-1.5">
+                      <View className="bg-gray-200 h-4 w-16 rounded-lg" />
+                    </View>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <View key={i} className="bg-gray-200 h-8 w-20 rounded-lg" />
+                    ))}
+                  </View>
+                </View>
+                
+                {/* Skeleton Map */}
+                <View className="bg-gray-200 h-48 rounded-2xl mb-4" />
+                
+                {/* Skeleton Buttons */}
+                <View className="flex-row gap-2 mb-4">
+                  <View className="bg-gray-200 h-10 flex-1 rounded-lg" />
+                  <View className="bg-gray-200 h-10 flex-1 rounded-lg" />
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   if (resorts.length === 0) {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF', padding: 20, justifyContent: 'center' }}>
