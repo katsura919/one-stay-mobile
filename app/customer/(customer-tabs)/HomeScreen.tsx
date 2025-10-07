@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ScrollView, View, StatusBar, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CategoryTabs from '../../../components/CategoryTabs';
 import Header from '../../../components/home-header';
@@ -26,7 +26,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <ScrollView 
         showsVerticalScrollIndicator={false}
         refreshControl={

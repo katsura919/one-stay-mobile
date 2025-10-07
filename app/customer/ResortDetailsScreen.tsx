@@ -2,7 +2,6 @@ import * as React from 'react';
 import { 
   View, 
   Text, 
-  SafeAreaView, 
   ScrollView, 
   Image, 
   TouchableOpacity, 
@@ -10,6 +9,7 @@ import {
   Alert,
   ActivityIndicator 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
   ChevronLeft, 
   MapPin, 

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, X, MapPin, Clock, Star, ChevronLeft, History } from 'lucide-react-native';
 import { resortAPI, Resort } from '@/services/resortService';
 import { router } from 'expo-router';
