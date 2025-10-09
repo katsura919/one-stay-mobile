@@ -44,7 +44,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header with Settings Icon */}
       <View className="bg-white px-4  border-b border-gray-200">
         <View className="flex-row items-center justify-between mb-4">
@@ -144,6 +144,6 @@ export default function ProfileScreen() {
         </View>
       </View>
     </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

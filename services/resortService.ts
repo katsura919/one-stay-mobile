@@ -199,14 +199,15 @@ export const resortAPI = {
     }
   },
 
-  getResortById: async (id: string): Promise<Resort> => {
+  getResortById: async (id: string): Promise<Resort | null> => {
     try {
       const response = await apiRequest(`/resort/${id}`, {
         method: 'GET',
       });
       return response;
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'Failed to fetch resort');
+      console.warn(`Resort with ID ${id} not found or failed to fetch:`, error);
+      return null;
     }
   },
 
