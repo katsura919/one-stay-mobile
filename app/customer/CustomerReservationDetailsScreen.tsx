@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { View, ScrollView, Image, Alert } from 'react-native';
-import { Text, Card, Chip, Button, Avatar, Divider } from 'react-native-paper';
+import { View, ScrollView, Image, Alert, TouchableOpacity, Dimensions } from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { reservationAPI, feedbackAPI, type Reservation, type FeedbackEligibility } from '@/services/reservationService';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft, MapPin, Calendar, Users, Star, MessageCircle, XCircle, CheckCircle } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function CustomerReservationDetailsScreen() {
   const router = useRouter();
@@ -13,7 +15,6 @@ export default function CustomerReservationDetailsScreen() {
   const [reservation, setReservation] = React.useState<Reservation | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [feedbackEligibility, setFeedbackEligibility] = React.useState<FeedbackEligibility | null>(null);
-
   React.useEffect(() => {
     fetchReservationDetails();
     checkFeedbackEligibility();
@@ -25,7 +26,11 @@ export default function CustomerReservationDetailsScreen() {
     try {
       setLoading(true);
       const response = await reservationAPI.getReservationById(reservationId);
-      setReservation(response.reservation);
+      const reservationData = response.reservation;
+      console.log('Reservation data loaded:', reservationData);
+      setReservation(reservationData);
+      
+      // The reservation already has room and resort populated, no need to fetch separately
     } catch (error) {
       console.error('Error fetching reservation details:', error);
       Alert.alert('Error', 'Failed to load reservation details');
@@ -115,11 +120,21 @@ export default function CustomerReservationDetailsScreen() {
     );
   };
 
+  const calculateNights = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-1 justify-center items-center">
-          <Text>Loading reservation details...</Text>
+          <ActivityIndicator animating={true} color="#1F2937" size="large" />
+          <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', marginTop: 12 }}>
+            Loading reservation details...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -127,218 +142,245 @@ export default function CustomerReservationDetailsScreen() {
 
   if (!reservation) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 justify-center items-center">
-          <Text>Reservation not found</Text>
-          <Button mode="contained" onPress={() => router.back()}>
-            Go Back
-          </Button>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-1 justify-center items-center px-6">
+          <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 8 }}>
+            Reservation not found
+          </Text>
+          <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280', textAlign: 'center', marginBottom: 20 }}>
+            The reservation you're looking for doesn't exist or has been removed.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="bg-gray-900 px-6 py-3 rounded-xl"
+          >
+            <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: '#FFFFFF' }}>
+              Go Back
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const resort = reservation.room_id_populated?.resort_id;
-  const room = reservation.room_id_populated;
+  // The API returns room_id (not room_id_populated) with nested resort_id
+  const room = (reservation as any).room_id || reservation.room_id_populated;
+  const resort = room?.resort_id;
+  const nights = calculateNights(reservation.start_date, reservation.end_date);
+  
+  // Get resort_id and name from the populated data
+  const resortId = resort?._id;
+  const resortName = resort?.resort_name || 'Resort';
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView>
-        {/* Header */}
-        <View className="p-6 bg-white">
-          <View className="flex-row items-center mb-4">
-            <Button 
-              mode="text" 
-              onPress={() => router.back()}
-              contentStyle={{ flexDirection: 'row-reverse' }}
-            >
-              <Ionicons name="arrow-back" size={24} color="#3b82f6" />
-            </Button>
-            <Text className="text-xl font-bold text-gray-800 ml-2">Reservation Details</Text>
-          </View>
-          
-          <View className="flex-row justify-between items-center">
-            <Text className="text-2xl font-bold text-gray-800 flex-1">
-              {resort?.resort_name}
-            </Text>
-            <Chip
-              mode="flat"
-              icon={() => <Ionicons name={getStatusIcon(reservation.status)} size={16} color="white" />}
-              textStyle={{ color: 'white', fontWeight: 'bold' }}
-              style={{ backgroundColor: getStatusColor(reservation.status) }}
-            >
-              {reservation.status.toUpperCase()}
-            </Chip>
-          </View>
-        </View>
+      {/* Header */}
+      <View className="bg-white flex-row items-center px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center"
+        >
+          <ChevronLeft color="#1F2937" size={20} />
+        </TouchableOpacity>
+        <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#111827', flex: 1, textAlign: 'center', marginRight: 36 }}>
+          Reservation Details
+        </Text>
+      </View>
 
-        {/* Resort Image */}
-        {resort?.image && (
-          <Image
-            source={{ uri: resort.image }}
-            className="w-full h-48"
-            resizeMode="cover"
-          />
-        )}
-
-        <View className="p-6 space-y-4">
-          {/* Reservation Info */}
-          <Card>
-            <Card.Content className="p-6">
-              <Text className="text-lg font-semibold text-gray-800 mb-4">Booking Information</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="px-4 py-4">
+          {/* Resort Details */}
+          <View className="bg-white rounded-xl p-4 mb-3">
+            <View className="flex-row items-start justify-between mb-3">
+              <View className="flex-1 mr-3">
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 6 }}>
+                  {resortName}
+                </Text>
+                {resort?.location?.address && (
+                  <View className="flex-row items-center">
+                    <MapPin color="#6B7280" size={14} />
+                    <Text style={{ fontSize: 12, fontFamily: 'Roboto', color: '#6B7280', marginLeft: 4, flex: 1 }}>
+                      {resort.location.address}
+                    </Text>
+                  </View>
+                )}
+              </View>
               
-              <View className="space-y-3">
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Check-in:</Text>
-                  <Text className="font-medium text-gray-800">
-                    {new Date(reservation.start_date).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </Text>
-                </View>
-                
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Check-out:</Text>
-                  <Text className="font-medium text-gray-800">
-                    {new Date(reservation.end_date).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </Text>
-                </View>
-                
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Room Type:</Text>
-                  <Text className="font-medium text-gray-800">{room?.room_type}</Text>
-                </View>
-                
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Capacity:</Text>
-                  <Text className="font-medium text-gray-800">{room?.capacity} guests</Text>
-                </View>
-                
-                <Divider className="my-2" />
-                
-                <View className="flex-row justify-between">
-                  <Text className="text-lg font-semibold text-gray-800">Total:</Text>
-                  <Text className="text-lg font-bold text-blue-600">${reservation.total_price}</Text>
-                </View>
+              {/* Status Badge */}
+              <View 
+                className="px-3 py-1.5 rounded-lg flex-row items-center"
+                style={{ backgroundColor: getStatusColor(reservation.status) }}
+              >
+                {reservation.status === 'approved' && <CheckCircle color="#FFFFFF" size={12} style={{ marginRight: 4 }} />}
+                {reservation.status === 'rejected' && <XCircle color="#FFFFFF" size={12} style={{ marginRight: 4 }} />}
+                {reservation.status === 'cancelled' && <XCircle color="#FFFFFF" size={12} style={{ marginRight: 4 }} />}
+                <Text style={{ fontSize: 10, fontFamily: 'Roboto-Bold', color: '#FFFFFF', textTransform: 'uppercase' }}>
+                  {reservation.status}
+                </Text>
               </View>
-            </Card.Content>
-          </Card>
+            </View>
 
-          {/* Resort Location */}
-          {resort?.location && (
-            <Card>
-              <Card.Content className="p-6">
-                <Text className="text-lg font-semibold text-gray-800 mb-4">Location</Text>
-                <View className="flex-row items-start">
-                  <Ionicons name="location" size={20} color="#6b7280" />
-                  <Text className="text-gray-600 ml-2 flex-1">{resort.location.address}</Text>
-                </View>
-              </Card.Content>
-            </Card>
-          )}
-
-          {/* Customer Details */}
-          <Card>
-            <Card.Content className="p-6">
-              <Text className="text-lg font-semibold text-gray-800 mb-4">Guest Information</Text>
-              <View className="flex-row items-center">
-                <Avatar.Image 
-                  size={48}
-                  source={{ uri: 'https://randomuser.me/api/portraits/women/32.jpg' }}
-                />
-                <View className="ml-3">
-                  <Text className="font-medium text-gray-800">
-                    {reservation.user_id_populated?.username || 'Guest'}
-                  </Text>
-                  <Text className="text-gray-600">
-                    {reservation.user_id_populated?.email}
+            {/* Room Details */}
+            <View className="h-px bg-gray-200 my-3" />
+            <View className="flex-row items-center">
+              <View className="bg-blue-50 px-3 py-1.5 rounded-lg flex-1 mr-2">
+                <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>Room Type</Text>
+                <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#1F2937', marginTop: 2 }}>
+                  {room?.room_type || 'N/A'}
+                </Text>
+              </View>
+              <View className="bg-blue-50 px-3 py-1.5 rounded-lg flex-1 ml-2">
+                <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#6B7280' }}>Capacity</Text>
+                <View className="flex-row items-center mt-1">
+                  <Users color="#1F2937" size={14} />
+                  <Text style={{ fontSize: 14, fontFamily: 'Roboto-Bold', color: '#1F2937', marginLeft: 4 }}>
+                    {room?.capacity || 0} Guests
                   </Text>
                 </View>
               </View>
-            </Card.Content>
-          </Card>
+            </View>
+          </View>
+
+          {/* Booking Dates */}
+          <View className="bg-white rounded-xl p-4 mb-3">
+            <View className="flex-row items-center mb-3">
+              <Calendar color="#1F2937" size={18} />
+              <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#111827', marginLeft: 6 }}>
+                Booking Dates
+              </Text>
+            </View>
+            
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#6B7280', marginBottom: 4 }}>
+                  Check-in
+                </Text>
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Bold', color: '#1F2937' }}>
+                  {new Date(reservation.start_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </Text>
+              </View>
+              
+              <View className="px-3">
+                <View className="bg-gray-200 px-2 py-1 rounded">
+                  <Text style={{ fontSize: 10, fontFamily: 'Roboto-Bold', color: '#6B7280' }}>
+                    {nights} {nights === 1 ? 'Night' : 'Nights'}
+                  </Text>
+                </View>
+              </View>
+              
+              <View className="flex-1 items-end">
+                <Text style={{ fontSize: 11, fontFamily: 'Roboto-Medium', color: '#6B7280', marginBottom: 4 }}>
+                  Check-out
+                </Text>
+                <Text style={{ fontSize: 13, fontFamily: 'Roboto-Bold', color: '#1F2937' }}>
+                  {new Date(reservation.end_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Price Summary */}
+          <View className="bg-white rounded-xl p-4 mb-3">
+            <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#111827', marginBottom: 12 }}>
+              Price Summary
+            </Text>
+            
+            <View className="flex-row justify-between mb-2">
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#6B7280' }}>
+                ₱{(reservation.total_price / nights).toFixed(2)} × {nights} {nights === 1 ? 'night' : 'nights'}
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#1F2937' }}>
+                ₱{reservation.total_price.toLocaleString()}
+              </Text>
+            </View>
+            
+            <View className="h-px bg-gray-200 my-3" />
+            
+            <View className="flex-row justify-between">
+              <Text style={{ fontSize: 16, fontFamily: 'Roboto-Bold', color: '#111827' }}>Total</Text>
+              <Text style={{ fontSize: 18, fontFamily: 'Roboto-Bold', color: '#1F2937' }}>
+                ₱{reservation.total_price.toLocaleString()}
+              </Text>
+            </View>
+          </View>
 
           {/* Action Buttons */}
-          <View className="mt-6 mb-6">
-
+          <View className="mb-6">
             {/* Rate Resort Button - Show if completed */}
             {reservation.status === 'completed' && (
               <>
                 {feedbackEligibility?.canGiveFeedback && !feedbackEligibility?.alreadySubmitted ? (
-                  <Button
-                    mode="contained"
+                  <TouchableOpacity
                     onPress={handleRateStay}
-                    buttonColor="#22c55e"
-                    contentStyle={{ paddingVertical: 12 }}
-                    labelStyle={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}
-                    className="mb-3"
+                    className="bg-green-500 rounded-xl py-3.5 mb-3 flex-row items-center justify-center"
+                    activeOpacity={0.8}
                   >
-                    ⭐ Rate Your Stay
-                  </Button>
+                    <Star color="#FFFFFF" size={18} fill="#FFFFFF" />
+                    <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#FFFFFF', marginLeft: 6 }}>
+                      Rate Your Stay
+                    </Text>
+                  </TouchableOpacity>
                 ) : feedbackEligibility?.alreadySubmitted ? (
-                  <Card style={{ backgroundColor: '#f0f9ff' }} className="mb-3">
-                    <Card.Content className="p-4">
-                      <View className="flex-row items-center justify-center">
-                        <Ionicons name="star" size={20} color="#3b82f6" />
-                        <Text className="text-blue-600 ml-2 font-medium">
-                          You have already rated this stay
-                        </Text>
-                      </View>
-                    </Card.Content>
-                  </Card>
-                ) : (
-                  <Button
-                    mode="contained"
-                    onPress={handleRateStay}
-                    buttonColor="#22c55e"
-                    contentStyle={{ paddingVertical: 12 }}
-                    labelStyle={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}
-                    className="mb-3"
-                  >
-                    ⭐ Rate Your Stay
-                  </Button>
-                )}
+                  <View className="bg-blue-50 rounded-xl p-4 mb-3 flex-row items-center justify-center">
+                    <Star color="#3b82f6" size={18} fill="#3b82f6" />
+                    <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#3b82f6', marginLeft: 6 }}>
+                      You have already rated this stay
+                    </Text>
+                  </View>
+                ) : null}
               </>
             )}
 
             {/* Cancel Button - Show if pending or approved */}
             {(reservation.status === 'pending' || reservation.status === 'approved') && (
-              <Button
-                mode="outlined"
+              <TouchableOpacity
                 onPress={handleCancelReservation}
-                buttonColor="transparent"
-                textColor="#ef4444"
-                style={{ borderColor: '#ef4444', borderWidth: 2 }}
-                contentStyle={{ paddingVertical: 12 }}
-                labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-                className="mb-3"
+                className="bg-white border-2 border-red-500 rounded-xl py-3.5 mb-3 flex-row items-center justify-center"
+                activeOpacity={0.8}
               >
-                ❌ Cancel Reservation
-              </Button>
+                <XCircle color="#EF4444" size={18} />
+                <Text style={{ fontSize: 15, fontFamily: 'Roboto-Bold', color: '#EF4444', marginLeft: 6 }}>
+                  Cancel Reservation
+                </Text>
+              </TouchableOpacity>
             )}
 
-            {/* Contact Support Button - Always show */}
-            <Button
-              mode="text"
+            {/* Message Resort Button */}
+            <TouchableOpacity
               onPress={() => {
-                // Navigate to support/chat
-                console.log('Contact support pressed');
+                if (!resortId) {
+                  Alert.alert('Error', 'Resort information not available. Unable to start chat.');
+                  return;
+                }
+                
+                console.log('Starting chat with resort:', { resortId, resortName });
+                
+                // Navigate to chat with resort details
+                router.push({
+                  pathname: '/customer/CustomerChatConvo',
+                  params: {
+                    resortId: resortId,
+                    resortName: resortName,
+                    newChat: 'true'
+                  }
+                });
               }}
-              textColor="#6b7280"
-              contentStyle={{ paddingVertical: 8 }}
-              labelStyle={{ fontSize: 14 }}
-              className="mt-2"
+              className="bg-gray-100 rounded-xl py-3.5 flex-row items-center justify-center"
+              activeOpacity={0.8}
             >
-              Need help? Contact Support
-            </Button>
+              <MessageCircle color="#6B7280" size={18} />
+              <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: '#6B7280', marginLeft: 6 }}>
+                Message Resort
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

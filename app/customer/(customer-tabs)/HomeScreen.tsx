@@ -42,7 +42,6 @@ export default function HomeScreen() {
           <Header />
           <SearchBar />
         </View>
-        <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
         <HotelCardList />
         <View className="mb-20" />
       </ScrollView>

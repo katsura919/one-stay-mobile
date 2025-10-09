@@ -42,6 +42,7 @@ export default function ChatConversation() {
       setupSocketListeners();
     } catch (error) {
       console.error('Error initializing chat:', error);
+      setIsLoading(false); // Ensure loading state is set to false on error
       Alert.alert('Error', 'Failed to initialize chat');
     }
   };
