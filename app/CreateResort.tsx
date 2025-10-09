@@ -212,22 +212,13 @@ export default function CreateResortScreen() {
 
   const renderStep1 = () => (
     <View style={{ width: '100%' }}>
-      <Text style={{ 
-        fontSize: 16,
-        color: '#64748B',
-        marginBottom: 32,
-        lineHeight: 24,
-      }}>
-        Tell us about your resort to help guests find and book with confidence.
-      </Text>
-
-      <View style={{ gap: 20 }}>
+      <View style={{ gap: 16 }}>
         <View>
           <Text style={{ 
-            fontSize: 14,
-            fontWeight: '600',
+            fontSize: 13,
+            fontFamily: 'Roboto-Medium',
             color: '#374151',
-            marginBottom: 8,
+            marginBottom: 6,
           }}>
             Resort Name *
           </Text>
@@ -235,19 +226,19 @@ export default function CreateResortScreen() {
             value={formData.resort_name}
             onChangeText={(value) => updateFormData('resort_name', value)}
             mode="outlined"
-            placeholder="Enter your resort name"
-            style={{ backgroundColor: '#FFFFFF' }}
-            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1 }}
-            contentStyle={{ fontSize: 16 }}
+            placeholder="e.g. Sunset Beach Resort"
+            style={{ backgroundColor: '#FFFFFF', fontFamily: 'Roboto' }}
+            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 10 }}
+            contentStyle={{ fontSize: 15, fontFamily: 'Roboto' }}
           />
         </View>
         
         <View>
           <Text style={{ 
-            fontSize: 14,
-            fontWeight: '600',
+            fontSize: 13,
+            fontFamily: 'Roboto-Medium',
             color: '#374151',
-            marginBottom: 8,
+            marginBottom: 6,
           }}>
             Address *
           </Text>
@@ -256,41 +247,34 @@ export default function CreateResortScreen() {
             onChangeText={(value) => updateFormData('address', value)}
             mode="outlined"
             placeholder="Full address of your resort"
-            style={{ backgroundColor: '#FFFFFF' }}
-            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1 }}
-            contentStyle={{ fontSize: 16 }}
+            style={{ backgroundColor: '#FFFFFF', fontFamily: 'Roboto' }}
+            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 10 }}
+            contentStyle={{ fontSize: 15, fontFamily: 'Roboto' }}
             multiline
-            numberOfLines={3}
+            numberOfLines={2}
           />
         </View>
         
         <View>
           <Text style={{ 
-            fontSize: 14,
-            fontWeight: '600',
+            fontSize: 13,
+            fontFamily: 'Roboto-Medium',
             color: '#374151',
-            marginBottom: 8,
+            marginBottom: 6,
           }}>
-            Description
+            Description (Optional)
           </Text>
           <TextInput
             value={formData.description}
             onChangeText={(value) => updateFormData('description', value)}
             mode="outlined"
             placeholder="Describe what makes your resort special..."
-            style={{ backgroundColor: '#FFFFFF' }}
-            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1 }}
-            contentStyle={{ fontSize: 16 }}
+            style={{ backgroundColor: '#FFFFFF', fontFamily: 'Roboto' }}
+            outlineStyle={{ borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 10 }}
+            contentStyle={{ fontSize: 15, fontFamily: 'Roboto' }}
             multiline
-            numberOfLines={4}
+            numberOfLines={3}
           />
-          <Text style={{ 
-            fontSize: 12,
-            color: '#64748B',
-            marginTop: 4,
-          }}>
-            Optional - Help guests understand what makes your resort unique
-          </Text>
         </View>
       </View>
     </View>
@@ -298,65 +282,49 @@ export default function CreateResortScreen() {
 
   const renderStep2 = () => (
     <View style={{ width: '100%' }}>
-      <Text style={{ 
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#0F172A',
-        marginBottom: 8,
-      }}>
-        Location
-      </Text>
-      <Text style={{ 
-        fontSize: 16,
-        color: '#64748B',
-        marginBottom: 32,
-        lineHeight: 24,
-      }}>
-        Pin your exact location to help guests find you easily.
-      </Text>
-
       <TouchableOpacity
         onPress={() => setShowMapPicker(true)}
         style={{
           borderWidth: 1,
           borderColor: formData.selectedLocation ? '#1F2937' : '#E2E8F0',
           borderRadius: 12,
-          padding: 20,
+          padding: 16,
           backgroundColor: formData.selectedLocation ? '#F8FAFC' : '#FFFFFF',
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             backgroundColor: formData.selectedLocation ? '#1F2937' : '#F1F5F9',
             justifyContent: 'center',
             alignItems: 'center',
             marginRight: 12,
           }}>
-            <Text style={{ fontSize: 18 }}>
+            <Text style={{ fontSize: 16 }}>
               {formData.selectedLocation ? '📍' : '🗺️'}
             </Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ 
-              fontSize: 16,
-              fontWeight: '600',
+              fontSize: 15,
+              fontFamily: 'Roboto-Medium',
               color: formData.selectedLocation ? '#1F2937' : '#64748B',
               marginBottom: 2,
             }}>
               {formData.selectedLocation ? 'Location Selected' : 'Select Location'}
             </Text>
             <Text style={{ 
-              fontSize: 14,
+              fontSize: 13,
+              fontFamily: 'Roboto',
               color: '#64748B',
             }}>
               {formData.selectedLocation ? 'Tap to change location' : 'Tap to open map picker'}
             </Text>
           </View>
-          <Text style={{ fontSize: 18, color: '#64748B' }}>›</Text>
+          <Text style={{ fontSize: 16, color: '#64748B', fontFamily: 'Roboto' }}>›</Text>
         </View>
       </TouchableOpacity>
       
@@ -364,32 +332,28 @@ export default function CreateResortScreen() {
         <View style={{
           backgroundColor: '#F8FAFC',
           borderRadius: 12,
-          padding: 20,
+          padding: 16,
           borderWidth: 1,
           borderColor: '#E2E8F0',
         }}>
           <Text style={{ 
-            fontSize: 16,
-            fontWeight: '600',
+            fontSize: 14,
+            fontFamily: 'Roboto-Medium',
             color: '#1F2937',
-            marginBottom: 12,
+            marginBottom: 10,
           }}>
-            Selected Location Details
+            Location Coordinates
           </Text>
-          <View style={{ gap: 8 }}>
+          <View style={{ gap: 6 }}>
             <View style={{ flexDirection: 'row' }}>
-              <Text style={{ fontSize: 14, color: '#64748B', width: 80 }}>Address:</Text>
-              <Text style={{ fontSize: 14, color: '#374151', flex: 1 }}>{formData.address}</Text>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ fontSize: 14, color: '#64748B', width: 80 }}>Latitude:</Text>
-              <Text style={{ fontSize: 14, color: '#374151', flex: 1 }}>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#64748B', width: 70 }}>Latitude:</Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151', flex: 1 }}>
                 {formData.selectedLocation.latitude.toFixed(6)}
               </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
-              <Text style={{ fontSize: 14, color: '#64748B', width: 80 }}>Longitude:</Text>
-              <Text style={{ fontSize: 14, color: '#374151', flex: 1 }}>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto', color: '#64748B', width: 70 }}>Longitude:</Text>
+              <Text style={{ fontSize: 13, fontFamily: 'Roboto-Medium', color: '#374151', flex: 1 }}>
                 {formData.selectedLocation.longitude.toFixed(6)}
               </Text>
             </View>
@@ -400,18 +364,19 @@ export default function CreateResortScreen() {
       {!formData.selectedLocation && (
         <View style={{
           backgroundColor: '#FEF3C7',
-          borderRadius: 12,
-          padding: 16,
+          borderRadius: 10,
+          padding: 12,
           borderWidth: 1,
           borderColor: '#FCD34D',
         }}>
           <Text style={{ 
-            fontSize: 14,
+            fontSize: 12,
+            fontFamily: 'Roboto',
             color: '#92400E',
             textAlign: 'center',
-            lineHeight: 20,
+            lineHeight: 18,
           }}>
-            ⚠️ Accurate location helps guests find you and improves your visibility in search results.
+            ⚠️ Accurate location helps guests find you and improves visibility
           </Text>
         </View>
       )}
@@ -420,73 +385,57 @@ export default function CreateResortScreen() {
 
   const renderStep3 = () => (
     <View style={{ width: '100%' }}>
-      <Text style={{ 
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#0F172A',
-        marginBottom: 8,
-      }}>
-        Resort Image
-      </Text>
-      <Text style={{ 
-        fontSize: 16,
-        color: '#64748B',
-        marginBottom: 32,
-        lineHeight: 24,
-      }}>
-        Add a beautiful image to showcase your resort and attract more guests.
-      </Text>
-      
       {formData.selectedImage ? (
         <View style={{
-          borderRadius: 16,
+          borderRadius: 12,
           overflow: 'hidden',
           backgroundColor: '#F8FAFC',
           borderWidth: 1,
           borderColor: '#E2E8F0',
-          marginBottom: 24,
+          marginBottom: 16,
         }}>
           <TouchableOpacity onPress={pickImage}>
             <Image 
               source={{ uri: formData.selectedImage }} 
               style={{ 
                 width: '100%', 
-                height: 240,
+                height: 200,
               }}
               resizeMode="cover"
             />
             <View style={{
               position: 'absolute',
-              top: 12,
-              right: 12,
+              top: 10,
+              right: 10,
               backgroundColor: 'rgba(0,0,0,0.7)',
-              borderRadius: 20,
-              padding: 8,
+              borderRadius: 18,
+              padding: 6,
             }}>
               <Text style={{ color: '#FFFFFF', fontSize: 12 }}>📷</Text>
             </View>
           </TouchableOpacity>
           
           <View style={{
-            padding: 16,
+            padding: 12,
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
             <View style={{ flex: 1 }}>
               <Text style={{ 
-                fontSize: 16,
-                fontWeight: '600',
+                fontSize: 14,
+                fontFamily: 'Roboto-Medium',
                 color: '#1F2937',
                 marginBottom: 2,
               }}>
                 Resort Image Added
               </Text>
               <Text style={{ 
-                fontSize: 14,
+                fontSize: 12,
+                fontFamily: 'Roboto',
                 color: '#64748B',
               }}>
-                Tap image to change or use buttons below
+                Tap image to change
               </Text>
             </View>
             <TouchableOpacity
@@ -509,57 +458,59 @@ export default function CreateResortScreen() {
             borderWidth: 2,
             borderColor: '#E2E8F0',
             borderStyle: 'dashed',
-            borderRadius: 16,
-            padding: 40,
+            borderRadius: 12,
+            padding: 32,
             alignItems: 'center',
             backgroundColor: '#FAFBFC',
-            marginBottom: 24,
+            marginBottom: 16,
           }}
         >
           <View style={{
-            width: 64,
-            height: 64,
-            borderRadius: 32,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
             backgroundColor: '#F1F5F9',
             justifyContent: 'center',
             alignItems: 'center',
-            marginBottom: 16,
+            marginBottom: 12,
           }}>
-            <Text style={{ fontSize: 28 }}>📷</Text>
+            <Text style={{ fontSize: 24 }}>📷</Text>
           </View>
           <Text style={{ 
-            fontSize: 18,
-            fontWeight: '600',
+            fontSize: 16,
+            fontFamily: 'Roboto-Medium',
             color: '#1F2937',
             marginBottom: 4,
           }}>
             Add Resort Image
           </Text>
           <Text style={{ 
-            fontSize: 14,
+            fontSize: 13,
+            fontFamily: 'Roboto',
             color: '#64748B',
             textAlign: 'center',
-            lineHeight: 20,
+            lineHeight: 18,
           }}>
-            Choose from camera or gallery{'\n'}High-quality images attract more guests
+            Choose from camera or gallery
           </Text>
         </TouchableOpacity>
       )}
 
       <View style={{
         backgroundColor: '#EEF2FF',
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 10,
+        padding: 12,
         borderWidth: 1,
         borderColor: '#C7D2FE',
       }}>
         <Text style={{ 
-          fontSize: 14,
+          fontSize: 12,
+          fontFamily: 'Roboto',
           color: '#3730A3',
           textAlign: 'center',
-          lineHeight: 20,
+          lineHeight: 18,
         }}>
-          💡 <Text style={{ fontWeight: '600' }}>Pro Tip:</Text> High-quality images can increase booking rates by up to 40%. Make sure your image is well-lit and showcases your resort's best features.
+          💡 <Text style={{ fontFamily: 'Roboto-Medium' }}>Tip:</Text> High-quality images attract more guests
         </Text>
       </View>
     </View>
@@ -574,24 +525,25 @@ export default function CreateResortScreen() {
       }}>
         {/* Fixed Header */}
         <View style={{ 
-          paddingHorizontal: 24,
-          paddingTop: 20,
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: 16,
           backgroundColor: '#1F2937',
-          borderBottomWidth: 2,
-          borderBottomColor: '#F1F5F9',
+          borderBottomWidth: 1,
+          borderBottomColor: '#374151',
         }}>
           <Text style={{ 
-            fontSize: 28,
-            fontWeight: '700',
+            fontSize: 22,
+            fontFamily: 'Roboto-Bold',
             color: '#FFFFFF',
             marginBottom: 4,
           }}>
             Create Resort
           </Text>
           <Text style={{ 
-            fontSize: 16,
-            color: '#64748B',
-            marginBottom: 20,
+            fontSize: 14,
+            fontFamily: 'Roboto',
+            color: '#9CA3AF',
           }}>
             {getStepDescription(currentStep)}
           </Text>
@@ -601,8 +553,8 @@ export default function CreateResortScreen() {
         <ScrollView 
           style={{ flex: 1 }}
           contentContainerStyle={{ 
-            paddingHorizontal: 24,
-            paddingTop: 15,
+            paddingHorizontal: 20,
+            paddingTop: 20,
             paddingBottom: 120, // Space for fixed footer
           }}
           showsVerticalScrollIndicator={false}
@@ -620,24 +572,24 @@ export default function CreateResortScreen() {
           right: 0,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: '#F1F5F9',
-          paddingHorizontal: 24,
-          paddingVertical: 16,
-          paddingBottom: Math.max(16, insets.bottom),
+          borderTopColor: '#E5E7EB',
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          paddingBottom: Math.max(12, insets.bottom),
         }}>
           {/* Step Indicators */}
           <View style={{ 
             flexDirection: 'row', 
             justifyContent: 'center', 
-            marginBottom: 20,
-            gap: 8,
+            marginBottom: 16,
+            gap: 6,
           }}>
             {Array.from({ length: totalSteps }, (_, index) => (
               <View
                 key={index}
                 style={{
-                  width: 24,
-                  height: 4,
+                  width: 20,
+                  height: 3,
                   borderRadius: 2,
                   backgroundColor: index + 1 <= currentStep ? '#1F2937' : '#E2E8F0',
                 }}
@@ -646,7 +598,7 @@ export default function CreateResortScreen() {
           </View>
 
           {/* Navigation Buttons */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
             {currentStep > 1 && (
               <Button
                 mode="outlined"
@@ -656,8 +608,8 @@ export default function CreateResortScreen() {
                   borderColor: '#E2E8F0',
                   borderWidth: 1,
                 }}
-                labelStyle={{ color: '#64748B', fontSize: 16, fontWeight: '500' }}
-                contentStyle={{ height: 48 }}
+                labelStyle={{ color: '#64748B', fontSize: 15, fontFamily: 'Roboto-Medium' }}
+                contentStyle={{ height: 44 }}
               >
                 Back
               </Button>
@@ -672,8 +624,8 @@ export default function CreateResortScreen() {
                   flex: currentStep === 1 ? 1 : 2,
                 }}
                 buttonColor="#1F2937"
-                labelStyle={{ fontSize: 16, fontWeight: '600' }}
-                contentStyle={{ height: 48 }}
+                labelStyle={{ fontSize: 15, fontFamily: 'Roboto-Medium' }}
+                contentStyle={{ height: 44 }}
               >
                 Continue
               </Button>
@@ -685,8 +637,8 @@ export default function CreateResortScreen() {
                 disabled={!validateStep(currentStep)}
                 style={{ flex: 2 }}
                 buttonColor="#1F2937"
-                labelStyle={{ fontSize: 16, fontWeight: '600' }}
-                contentStyle={{ height: 48 }}
+                labelStyle={{ fontSize: 15, fontFamily: 'Roboto-Medium' }}
+                contentStyle={{ height: 44 }}
               >
                 Create Resort
               </Button>
