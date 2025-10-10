@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Dimensions, TouchableOpacity } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 import { MapPin, ExternalLink } from 'lucide-react-native';
 import { router } from 'expo-router';
 
@@ -40,6 +40,51 @@ const ResortScreenMaps: React.FC<ResortScreenMapsProps> = ({ location, resortNam
     });
   };
 
+  // HTML content with Leaflet.js for static map display
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100%; height: 100vh; }
+      </style>
+    </head>
+    <body>
+      <div id="map"></div>
+      <script>
+        // Initialize map
+        const map = L.map('map', {
+          center: [${location.latitude}, ${location.longitude}],
+          zoom: 14,
+          zoomControl: false,
+          dragging: false,
+          touchZoom: false,
+          doubleClickZoom: false,
+          scrollWheelZoom: false,
+          boxZoom: false,
+          keyboard: false,
+          tap: false
+        });
+        
+        // Add OpenStreetMap tiles (100% free, no API key)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap',
+          maxZoom: 19,
+        }).addTo(map);
+
+        // Add marker
+        const marker = L.marker([${location.latitude}, ${location.longitude}])
+          .addTo(map)
+          .bindPopup('<b>${resortName.replace(/'/g, "\\'")}</b><br>${location.address.replace(/'/g, "\\'")}');
+      </script>
+    </body>
+    </html>
+  `;
+
   return (
     <View style={{ marginTop: 20 }}>
       {/* Section Header */}
@@ -68,36 +113,15 @@ const ResortScreenMaps: React.FC<ResortScreenMapsProps> = ({ location, resortNam
           position: 'relative'
         }}
       >
-        <MapView
+        <WebView
+          source={{ html: htmlContent }}
           style={{ flex: 1 }}
-          initialRegion={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
           scrollEnabled={false}
-          zoomEnabled={false}
-          rotateEnabled={false}
-          pitchEnabled={false}
-          showsCompass={false}
-          showsScale={false}
-          showsBuildings={true}
-          showsTraffic={false}
-          showsIndoors={false}
-          showsPointsOfInterest={true}
+          bounces={false}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
           pointerEvents="none"
-        >
-          <Marker
-            coordinate={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-            }}
-            title={resortName}
-            description={location.address}
-            pinColor="red"
-          />
-        </MapView>
+        />
         
         {/* Overlay with tap indicator */}
         <View style={{

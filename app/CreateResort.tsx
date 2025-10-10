@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { resortAPI } from '../services/resortService';
 import { getToken } from '../utils/auth';
-import WebMapLocationPicker from '../components/WebMapLocationPicker';
+import OSMMapLocationPicker from '../components/OSMMapLocationPicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Location {
@@ -653,7 +653,7 @@ export default function CreateResortScreen() {
         animationType="slide"
         presentationStyle="fullScreen"
       >
-        <WebMapLocationPicker
+        <OSMMapLocationPicker
           onLocationSelect={handleLocationSelect}
           onCancel={() => setShowMapPicker(false)}
           initialLocation={formData.selectedLocation || undefined}

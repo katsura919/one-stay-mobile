@@ -39,7 +39,7 @@ import { User } from '../../../types/user';
 import { getCurrentUser, getToken } from '../../../utils/auth';
 import { useResort } from '../../../contexts/ResortContext';
 import ResortScreenMaps from '../../../components/resort-screen/resort-screen-maps';
-import WebMapLocationPicker from '../../../components/WebMapLocationPicker';
+import OSMMapLocationPicker from '../../../components/OSMMapLocationPicker';
 import { resortAPI, ResortFormData } from '../../../services/resortService';
 import { amenityAPI, Amenity } from '../../../services/amenityService';
 import { statsAPI, ResortStats } from '../../../services/statsService';
@@ -322,6 +322,23 @@ export default function ResortScreen() {
       if (resortStats[resortId]) return; // Already loaded
       
       const stats = await statsAPI.getResortStats(resortId);
+      
+      // If stats is null or undefined, use default values
+      if (!stats) {
+        setResortStats(prev => ({
+          ...prev,
+          [resortId]: {
+            resortId,
+            averageRating: 0,
+            totalRooms: 0,
+            totalReservations: 0,
+            totalFeedbacks: 0,
+            ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+          }
+        }));
+        return;
+      }
+      
       setResortStats(prev => ({
         ...prev,
         [resortId]: stats
@@ -443,28 +460,7 @@ export default function ResortScreen() {
     );
   }
 
-  if (resorts.length === 0) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', padding: 20, justifyContent: 'center' }}>
-        <Surface style={{ padding: 40, alignItems: 'center', borderRadius: 16 }} elevation={1}>
-          <Surface style={{ backgroundColor: '#FFF0F0', borderRadius: 40, padding: 20, marginBottom: 24 }}>
-            <Plus size={32} color="#FF5A5F" />
-          </Surface>
-          <Title style={{ marginBottom: 8 }}>No Properties Found</Title>
-          <Paragraph style={{ textAlign: 'center', marginBottom: 24 }}>
-            You haven't created any properties yet. Create your first property to get started.
-          </Paragraph>
-          <Button 
-            mode="contained" 
-            buttonColor="#FF5A5F"
-            onPress={() => router.push('/CreateResort')}
-          >
-            Create Your First Property
-          </Button>
-        </Surface>
-      </View>
-    );
-  }
+
 
     return (
       <SafeAreaView className="flex-1 bg-white">
@@ -902,7 +898,7 @@ export default function ResortScreen() {
         animationType="slide"
         presentationStyle="fullScreen"
       >
-        <WebMapLocationPicker
+        <OSMMapLocationPicker
           onLocationSelect={handleLocationSelect}
           onCancel={() => setMapPickerVisible(false)}
           initialLocation={{

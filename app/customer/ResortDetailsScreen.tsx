@@ -33,6 +33,7 @@ import { chatService } from '@/services/chatService';
 import { useAuth } from '@/contexts/AuthContext';
 import { statsAPI, ResortStats } from '@/services/statsService';
 import { amenityAPI, Amenity } from '@/services/amenityService';
+import ResortScreenMaps from '@/components/resort-screen/resort-screen-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -334,6 +335,14 @@ export default function ResortDetailsScreen() {
                 ))}
               </View>
             </View>
+          )}
+
+          {/* Location Map */}
+          {!loading && resort && (
+            <ResortScreenMaps 
+              location={resort.location}
+              resortName={resort.resort_name}
+            />
           )}
 
           {/* Rooms Available */}
