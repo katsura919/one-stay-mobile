@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import ResortLocationMap from '../components/ResortLocationMap';
@@ -35,25 +36,16 @@ export default function ViewResortLocationScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
-      {/* Back Button */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          onPress={handleBackPress}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <ArrowLeft size={24} color="#222222" />
-        </TouchableOpacity>
-      </View>
-
       {/* Map Component */}
       <View style={styles.mapContainer}>
         <ResortLocationMap resort={resortData} />
       </View>
-    </View>
+
+
+    </SafeAreaView>
   );
 }
 
@@ -64,22 +56,25 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     position: 'absolute',
-    top: 50, // Adjust based on status bar height
+    top: 10,
     left: 20,
-    zIndex: 1000,
+    zIndex: 9999, // Very high z-index to ensure it's on top
+    elevation: 10, // Android elevation
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   mapContainer: {
     flex: 1,

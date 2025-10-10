@@ -36,18 +36,48 @@ export default function ResortLocationMap({ resort }: ResortLocationMapProps) {
       <style>
         body { margin: 0; padding: 0; }
         #map { width: 100%; height: 100vh; }
+        
+        /* Style zoom controls for better visibility */
+        .leaflet-control-zoom {
+          border: none !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+        }
+        .leaflet-control-zoom a {
+          background-color: white !important;
+          color: #333 !important;
+          font-size: 20px !important;
+          font-weight: bold !important;
+          width: 36px !important;
+          height: 36px !important;
+          line-height: 36px !important;
+          border: none !important;
+        }
+        .leaflet-control-zoom a:hover {
+          background-color: #f4f4f4 !important;
+        }
+        .leaflet-touch .leaflet-control-zoom a {
+          width: 40px !important;
+          height: 40px !important;
+          line-height: 40px !important;
+        }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
-        // Initialize map
-        const map = L.map('map').setView([${resort.location.latitude}, ${resort.location.longitude}], 16);
+        // Initialize map with zoom controls explicitly enabled
+        const map = L.map('map', {
+          zoomControl: true,
+          zoomControlOptions: {
+            position: 'topright'
+          }
+        }).setView([${resort.location.latitude}, ${resort.location.longitude}], 16);
         
         // Add OpenStreetMap tiles (100% free, no API key)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19,
+          minZoom: 3
         }).addTo(map);
 
         // Custom marker icon (red pin)

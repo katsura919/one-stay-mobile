@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { View, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from 'react-native-paper';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -83,7 +84,7 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="bg-white flex-row items-center px-4 py-3 border-b border-gray-200">
         <TouchableOpacity 
@@ -163,6 +164,6 @@ export default function SettingsScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

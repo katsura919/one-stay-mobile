@@ -282,13 +282,9 @@ export default function ChatScreen() {
     >
       <View className="flex-row items-center px-4 py-3">
         <View className="relative">
-          <Image
-            source={{ uri: chat.resort_image }}
-            className="w-14 h-14 rounded-xl"
-            style={{ backgroundColor: '#f3f4f6' }}
-          />
+
           {chat.unread_count > 0 && (
-            <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">
+            <View className="absolute -top-1  bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">
               <Text style={{ fontSize: 10, fontFamily: 'Roboto-Bold', color: '#FFFFFF' }}>
                 {chat.unread_count > 99 ? '99+' : chat.unread_count}
               </Text>
