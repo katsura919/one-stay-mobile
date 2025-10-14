@@ -37,7 +37,7 @@ export default function SettingsScreen() {
         {
           icon: Lock,
           label: 'Change Password',
-          onPress: () => router.push('/owner/ChangePasswordScreen'),
+          onPress: () => router.push('/owner/ChangePassword'),
         },
       ]
     },

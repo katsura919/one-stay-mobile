@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { View, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TextInput, ActivityIndicator } from 'react-native-paper';
-import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { ArrowLeft, Lock } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userAPI } from '@/services/userService';
 
-export default function ChangePasswordScreen() {
+export default function ChangePassword() {
   const router = useRouter();
   const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
@@ -98,68 +98,6 @@ export default function ChangePasswordScreen() {
     }
   };
 
-  const PasswordInput = ({
-    label,
-    value,
-    onChangeText,
-    showPassword,
-    onToggleShow,
-    placeholder,
-  }: {
-    label: string;
-    value: string;
-    onChangeText: (text: string) => void;
-    showPassword: boolean;
-    onToggleShow: () => void;
-    placeholder: string;
-  }) => (
-    <View className="mb-4">
-      <Text style={{ fontSize: 12, fontFamily: 'Roboto-Bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-        {label}
-      </Text>
-      <View className="relative">
-        <View className="absolute left-4 top-[18px] z-10">
-          <Lock color="#6B7280" size={18} />
-        </View>
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          mode="outlined"
-          placeholder={placeholder}
-          style={{
-            backgroundColor: '#F9FAFB',
-            borderRadius: 12,
-            height: 56,
-            paddingLeft: 44,
-            paddingRight: 44,
-          }}
-          contentStyle={{
-            fontFamily: 'Roboto',
-            fontSize: 14,
-          }}
-          outlineStyle={{
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: '#E5E7EB',
-          }}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-        />
-        <TouchableOpacity
-          onPress={onToggleShow}
-          className="absolute right-4 top-[18px] z-10"
-          activeOpacity={0.7}
-        >
-          {showPassword ? (
-            <EyeOff color="#6B7280" size={18} />
-          ) : (
-            <Eye color="#6B7280" size={18} />
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
@@ -181,29 +119,89 @@ export default function ChangePasswordScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4">
-
+          {/* Security Info Card */}
+          <View className="bg-amber-50 rounded-xl border border-amber-200 p-4 mb-4">
+            <Text style={{ fontSize: 13, fontFamily: 'Roboto-Bold', color: '#92400E', marginBottom: 4 }}>
+              🔒 Keep Your Account Secure
+            </Text>
+            <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#78350F' }}>
+              Choose a strong password that you don't use for other accounts. Make sure it's at least 6 characters long.
+            </Text>
+          </View>
 
           {/* Form Section */}
           <View className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
             {/* Current Password */}
-            <PasswordInput
-              label="Current Password"
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              showPassword={showCurrentPassword}
-              onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
-              placeholder="Enter your current password"
-            />
+            <View className="mb-4">
+              <Text style={{ fontSize: 12, fontFamily: 'Roboto-Bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                Current Password
+              </Text>
+              <TextInput
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                mode="outlined"
+                placeholder="Current password"
+                left={<TextInput.Icon icon="lock" />}
+                right={
+                  <TextInput.Icon 
+                    icon={showCurrentPassword ? "eye-off" : "eye"} 
+                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                  />
+                }
+                style={{
+                  backgroundColor: '#F9FAFB',
+                  borderRadius: 12,
+                  height: 56,
+                }}
+                contentStyle={{
+                  fontFamily: 'Roboto',
+                  fontSize: 14,
+                }}
+                outlineStyle={{
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                }}
+                secureTextEntry={!showCurrentPassword}
+                autoCapitalize="none"
+              />
+            </View>
 
             {/* New Password */}
-            <PasswordInput
-              label="New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              showPassword={showNewPassword}
-              onToggleShow={() => setShowNewPassword(!showNewPassword)}
-              placeholder="Enter your new password"
-            />
+            <View className="mb-4">
+              <Text style={{ fontSize: 12, fontFamily: 'Roboto-Bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                New Password
+              </Text>
+              <TextInput
+                value={newPassword}
+                onChangeText={setNewPassword}
+                mode="outlined"
+                placeholder="New password"
+                left={<TextInput.Icon icon="lock" />}
+                right={
+                  <TextInput.Icon 
+                    icon={showNewPassword ? "eye-off" : "eye"} 
+                    onPress={() => setShowNewPassword(!showNewPassword)}
+                  />
+                }
+                style={{
+                  backgroundColor: '#F9FAFB',
+                  borderRadius: 12,
+                  height: 56,
+                }}
+                contentStyle={{
+                  fontFamily: 'Roboto',
+                  fontSize: 14,
+                }}
+                outlineStyle={{
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                }}
+                secureTextEntry={!showNewPassword}
+                autoCapitalize="none"
+              />
+            </View>
 
             {/* Password Requirements */}
             <View className="bg-gray-50 rounded-lg p-3 mb-4">
@@ -227,14 +225,40 @@ export default function ChangePasswordScreen() {
             </View>
 
             {/* Confirm New Password */}
-            <PasswordInput
-              label="Confirm New Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              showPassword={showConfirmPassword}
-              onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
-              placeholder="Re-enter your new password"
-            />
+            <View className="mb-4">
+              <Text style={{ fontSize: 12, fontFamily: 'Roboto-Bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                Confirm New Password
+              </Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                mode="outlined"
+                placeholder="Re-enter your new password"
+                left={<TextInput.Icon icon="lock" />}
+                right={
+                  <TextInput.Icon 
+                    icon={showConfirmPassword ? "eye-off" : "eye"} 
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
+                }
+                style={{
+                  backgroundColor: '#F9FAFB',
+                  borderRadius: 12,
+                  height: 56,
+                }}
+                contentStyle={{
+                  fontFamily: 'Roboto',
+                  fontSize: 14,
+                }}
+                outlineStyle={{
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                }}
+                secureTextEntry={!showConfirmPassword}
+                autoCapitalize="none"
+              />
+            </View>
 
             {/* Password Match Indicator */}
             {confirmPassword.length > 0 && (
