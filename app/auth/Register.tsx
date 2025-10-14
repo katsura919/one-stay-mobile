@@ -184,9 +184,7 @@ export default function RegisterScreen({ navigation }: any) {
               fontFamily: 'Inter',
               marginTop: 6
             }}
-            icon={() => (
-              <Text style={{ fontSize: 28, marginBottom: 2 }}>🏖️</Text>
-            )}
+
           >
             I'm a Guest
           </Button>
@@ -228,9 +226,6 @@ export default function RegisterScreen({ navigation }: any) {
               fontFamily: 'Inter',
               marginTop: 6
             }}
-            icon={() => (
-              <Text style={{ fontSize: 28, marginBottom: 2 }}>🏨</Text>
-            )}
           >
             I'm a Resort Owner
           </Button>

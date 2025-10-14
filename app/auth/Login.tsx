@@ -17,6 +17,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const handleLogin = async () => {
     // Basic validation
@@ -76,7 +77,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               <View className="items-center mb-8">
                 <Image 
                   source={require('../../assets/images/splash-icon.png')} 
-                  className="w-20 h-20 rounded-2xl" 
+                  className="w-42 h-32 rounded-2xl" 
                   style={{ resizeMode: 'contain' }} 
                 />
               </View>
@@ -128,6 +129,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     onChangeText={setPassword}
                     mode="outlined"
                     left={<TextInput.Icon icon="lock" />}
+                    right={
+                      <TextInput.Icon 
+                        icon={showPassword ? "eye-off" : "eye"} 
+                        onPress={() => setShowPassword(!showPassword)}
+                      />
+                    }
                     style={{ 
                       backgroundColor: '#F7F7F7', 
                       borderRadius: 16,
@@ -142,7 +149,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                       borderRadius: 16,
                       borderWidth: 1.5
                     }}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
                 </View>
               </View>

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, Alert, TouchableOpacity } from 'react-native';
 import { User, Bell, Shield, HelpCircle, LogOut, Lock, FileText, ChevronRight, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
     Alert.alert(
@@ -30,12 +32,12 @@ export default function SettingsScreen() {
         {
           icon: User,
           label: 'Edit Profile',
-          onPress: () => Alert.alert('Edit Profile', 'Profile editing coming soon!'),
+          onPress: () => router.push('/owner/UpdateProfileScreen'),
         },
         {
           icon: Lock,
           label: 'Change Password',
-          onPress: () => Alert.alert('Change Password', 'Password change coming soon!'),
+          onPress: () => router.push('/owner/ChangePasswordScreen'),
         },
       ]
     },
