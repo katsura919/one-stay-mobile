@@ -47,12 +47,12 @@ export default function SettingsScreen() {
         {
           icon: User,
           label: 'Edit Profile',
-          onPress: () => Alert.alert('Edit Profile', 'Profile editing coming soon!'),
+          onPress: () => router.push('/customer/UpdateProfileScreen'),
         },
         {
           icon: Lock,
           label: 'Change Password',
-          onPress: () => Alert.alert('Change Password', 'Password change coming soon!'),
+          onPress: () => router.push('/customer/ChangePassword'),
         },
       ]
     },
