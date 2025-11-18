@@ -18,9 +18,6 @@ const SearchBar = () => {
             Search destinations...
           </Text>
         </View>
-        <View className="w-8 h-8 bg-[#1F2937] rounded-lg items-center justify-center">
-          <SlidersHorizontal size={16} color="#fff" />
-        </View>
       </View>
     </TouchableOpacity>
   );

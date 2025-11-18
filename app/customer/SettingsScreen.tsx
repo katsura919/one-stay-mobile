@@ -57,16 +57,6 @@ export default function SettingsScreen() {
       ]
     },
     {
-      title: 'Preferences',
-      items: [
-        {
-          icon: Bell,
-          label: 'Notifications',
-          onPress: () => Alert.alert('Notifications', 'Notification settings coming soon!'),
-        },
-      ]
-    },
-    {
       title: 'Support',
       items: [
         {

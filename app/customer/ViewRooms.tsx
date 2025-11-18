@@ -173,24 +173,6 @@ export default function CustomerViewRooms() {
                     <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#6B7280' }}>/night</Text>
                   </View>
                 </View>
-
-                {/* Room Features */}
-                <View className="border-t border-gray-100 pt-3">
-                  <Text style={{ fontSize: 12, fontFamily: 'Roboto-Medium', color: '#374151', marginBottom: 6 }}>
-                    Room Features
-                  </Text>
-                  <View className="flex-row flex-wrap gap-2">
-                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
-                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Private Bathroom</Text>
-                    </View>
-                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
-                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Free WiFi</Text>
-                    </View>
-                    <View className="bg-gray-50 px-2.5 py-1 rounded-lg">
-                      <Text style={{ fontSize: 11, fontFamily: 'Roboto', color: '#4B5563' }}>Air Conditioning</Text>
-                    </View>
-                  </View>
-                </View>
               </TouchableOpacity>
             ))}
           </View>
